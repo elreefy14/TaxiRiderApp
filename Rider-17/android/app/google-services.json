@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1074805358241",
+    "project_id": "taxi-140ba",
+    "storage_bucket": "taxi-140ba.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1074805358241:android:7f18a1ce82cbe761ecfae0",
+        "android_client_info": {
+          "package_name": "com.mighty.taxirider"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBsFPm2tB54TWuAxfpu6dwQaEdY3SQJpW0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
