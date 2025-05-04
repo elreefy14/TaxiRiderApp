@@ -19,9 +19,12 @@ Map<String, String> buildHeaderTokens() {
     HttpHeaders.acceptHeader: 'application/json; charset=utf-8',
     'Access-Control-Allow-Headers': '*',
     'Access-Control-Allow-Origin': '*',
+    HttpHeaders.userAgentHeader:
+        'MightyTaxiRiderApp', // Custom User-Agent to bypass Imunify360 bot protection on the server
   };
   if (appStore.isLoggedIn) {
-    header.putIfAbsent(HttpHeaders.authorizationHeader, () => 'Bearer ${sharedPref.getString(TOKEN)}');
+    header.putIfAbsent(HttpHeaders.authorizationHeader,
+        () => 'Bearer ${sharedPref.getString(TOKEN)}');
   }
 // print('NETWORK_LOG--> Header:${header.toString()}');
   return header;
@@ -36,25 +39,38 @@ Uri buildBaseUrl(String endPoint) {
   return url;
 }
 
-Future<Response> buildHttpResponse(String endPoint, {HttpMethod method = HttpMethod.GET, Map? request, Map<String, String>? header_extra}) async {
+Future<Response> buildHttpResponse(String endPoint,
+    {HttpMethod method = HttpMethod.GET,
+    Map? request,
+    Map<String, String>? header_extra}) async {
   if (await isNetworkAvailable()) {
     var headers = buildHeaderTokens();
     Uri url = buildBaseUrl(endPoint);
     try {
       Response response;
       if (method == HttpMethod.POST) {
-        response = await http.post(url, body: jsonEncode(request), headers: header_extra != null ? header_extra : headers).timeout(Duration(seconds: 20), onTimeout: () => throw 'Timeout');
+        response = await http
+            .post(url,
+                body: jsonEncode(request),
+                headers: header_extra != null ? header_extra : headers)
+            .timeout(Duration(seconds: 20), onTimeout: () => throw 'Timeout');
       } else if (method == HttpMethod.DELETE) {
-        response = await delete(url, headers: headers).timeout(Duration(seconds: 20), onTimeout: () => throw 'Timeout');
+        response = await delete(url, headers: headers)
+            .timeout(Duration(seconds: 20), onTimeout: () => throw 'Timeout');
       } else if (method == HttpMethod.PUT) {
-        response = await put(url, body: jsonEncode(request), headers: headers).timeout(Duration(seconds: 20), onTimeout: () => throw 'Timeout');
+        response = await put(url, body: jsonEncode(request), headers: headers)
+            .timeout(Duration(seconds: 20), onTimeout: () => throw 'Timeout');
       } else {
-        response = await get(url, headers: header_extra != null ? header_extra : headers).timeout(Duration(seconds: 20), onTimeout: () => throw 'Timeout');
+        response = await get(url,
+                headers: header_extra != null ? header_extra : headers)
+            .timeout(Duration(seconds: 20), onTimeout: () => throw 'Timeout');
       }
       apiURLResponseLog(
         url: url.toString(),
         endPoint: endPoint,
-        headers: header_extra != null ? jsonEncode(header_extra) : jsonEncode(headers),
+        headers: header_extra != null
+            ? jsonEncode(header_extra)
+            : jsonEncode(headers),
         hasRequest: method == HttpMethod.POST || method == HttpMethod.PUT,
         request: jsonEncode(request),
         statusCode: response.statusCode.validate(),
@@ -63,7 +79,9 @@ Future<Response> buildHttpResponse(String endPoint, {HttpMethod method = HttpMet
       );
       return response;
     } catch (e, s) {
-      FirebaseCrashlytics.instance.recordError("API_ERROR->${url.toString()}::" + e.toString(), s, fatal: true);
+      FirebaseCrashlytics.instance.recordError(
+          "API_ERROR->${url.toString()}::" + e.toString(), s,
+          fatal: true);
       throw 'Something Went Wrong';
     }
   } else {
@@ -81,13 +99,21 @@ void prettyPrintJson(String input) {
 }
 
 void apiURLResponseLog(
-    {String url = "", String endPoint = "", String headers = "", String request = "", int statusCode = 0, dynamic responseBody = "", String methodType = "", bool hasRequest = false}) {
+    {String url = "",
+    String endPoint = "",
+    String headers = "",
+    String request = "",
+    int statusCode = 0,
+    dynamic responseBody = "",
+    String methodType = "",
+    bool hasRequest = false}) {
   // if (kReleaseMode) return;
   log("\u001B[39m \u001b[96m┌───────────────────────────────────────────────────────────────────────────────────────────────────────┐\u001B[39m");
   log("\u001B[39m \u001b[96m Time: ${DateTime.now()}\u001B[39m");
   log("\u001b[31m Url: \u001B[39m $url");
   log("\u001b[31m Header: \u001B[39m \u001b[96m$headers\u001B[39m");
-  if (request.isNotEmpty) log("\u001b[31m Request: \u001B[39m \u001b[96m$request\u001B[39m");
+  if (request.isNotEmpty)
+    log("\u001b[31m Request: \u001B[39m \u001b[96m$request\u001B[39m");
   log("${statusCode.isSuccessful() ? "\u001b[32m" : "\u001b[31m"}");
   log('Response ($methodType) $statusCode ${statusCode.isSuccessful() ? "\u001b[32m" : "\u001b[31m"} ');
   prettyPrintJson(responseBody);
@@ -125,7 +151,9 @@ Future handleResponse(Response response, [bool? avoidTokenError]) async {
       throw parseHtmlString(body['message']);
     } on Exception catch (e, s) {
       log(e);
-      FirebaseCrashlytics.instance.recordError("handleResponse_ERROR->${response.statusCode}::" + e.toString(), s, fatal: true);
+      FirebaseCrashlytics.instance.recordError(
+          "handleResponse_ERROR->${response.statusCode}::" + e.toString(), s,
+          fatal: true);
       throw 'Something Went Wrong';
     }
   }
