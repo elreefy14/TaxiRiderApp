@@ -11,7 +11,10 @@ import '../../main.dart';
 import '../../network/RestApis.dart';
 import '../../screens/ForgotPasswordScreen.dart';
 import '../../service/AuthService1.dart';
-import '../../utils/Colors.dart';
+import '../../utils/constant/app_colors.dart';
+import '../../utils/constant/app_image.dart';
+import '../../utils/constant/styles/app_text_style.dart';
+import '../../utils/constant/styles/input_border_styles.dart';
 import '../../utils/Common.dart';
 import '../../utils/Constants.dart';
 import '../../utils/Extensions/AppButtonWidget.dart';
@@ -31,26 +34,47 @@ class SignInScreen extends StatefulWidget {
   SignInScreenState createState() => SignInScreenState();
 }
 
-class SignInScreenState extends State<SignInScreen> {
-  GlobalKey<FormState> formKey = GlobalKey<FormState>();
+class SignInScreenState extends State<SignInScreen>
+    with TickerProviderStateMixin {
+  GlobalKey<FormState> loginFormKey = GlobalKey<FormState>();
+  GlobalKey<FormState> signUpFormKey = GlobalKey<FormState>();
   final FirebaseAuth auth = FirebaseAuth.instance;
   UserModel userModel = UserModel();
 
   AuthServices authService = AuthServices();
   GoogleAuthServices googleAuthService = GoogleAuthServices();
 
+  // Login controllers
   TextEditingController emailController = TextEditingController();
   TextEditingController passController = TextEditingController();
+
+  // Sign Up controllers
+  TextEditingController firstNameController = TextEditingController();
+  TextEditingController lastNameController = TextEditingController();
+  TextEditingController signUpEmailController = TextEditingController();
+  TextEditingController signUpPhoneController = TextEditingController();
+  TextEditingController signUpPasswordController = TextEditingController();
+  TextEditingController confirmPasswordController = TextEditingController();
+  TextEditingController userNameController = TextEditingController();
 
   FocusNode emailFocus = FocusNode();
   FocusNode passFocus = FocusNode();
 
   bool mIsRemember = false;
   bool isAcceptTermsNPrivacy = false;
+  bool isLogin = true; // To control which tab is active
+
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this, initialIndex: 0);
+    _tabController.addListener(() {
+      setState(() {
+        isLogin = _tabController.index == 0;
+      });
+    });
     init();
   }
 
@@ -66,8 +90,8 @@ class SignInScreenState extends State<SignInScreen> {
 
   Future<void> logIn() async {
     hideKeyboard(context);
-    if (formKey.currentState!.validate()) {
-      formKey.currentState!.save();
+    if (loginFormKey.currentState!.validate()) {
+      loginFormKey.currentState!.save();
       if (isAcceptTermsNPrivacy) {
         appStore.setLoading(true);
 
@@ -80,7 +104,10 @@ class SignInScreenState extends State<SignInScreen> {
         log(req);
         await logInApi(req).then((value) {
           userModel = value.data!;
-          auth.signInWithEmailAndPassword(email: emailController.text, password: passController.text).then((value) async {
+          auth
+              .signInWithEmailAndPassword(
+                  email: emailController.text, password: passController.text)
+              .then((value) async {
             sharedPref.setString(UID, value.user!.uid);
             updateProfileUid();
             await checkPermission().then((value) async {
@@ -90,10 +117,12 @@ class SignInScreenState extends State<SignInScreen> {
               });
             });
             appStore.setLoading(false);
-            launchScreen(context, DashBoardScreen(), isNewTask: true, pageRouteAnimation: PageRouteAnimation.Slide);
+            launchScreen(context, DashBoardScreen(),
+                isNewTask: true, pageRouteAnimation: PageRouteAnimation.Slide);
           }).catchError((e) {
             appStore.setLoading(false);
-            if (e.toString().contains('user-not-found') || e.toString().contains('invalid')) {
+            if (e.toString().contains('user-not-found') ||
+                e.toString().contains('invalid')) {
               authService.signUpWithEmailPassword(
                 context,
                 mobileNumber: userModel.contactNumber,
@@ -105,14 +134,60 @@ class SignInScreenState extends State<SignInScreen> {
                 userType: RIDER,
               );
             } else {
-              launchScreen(context, DashBoardScreen(), isNewTask: true, pageRouteAnimation: PageRouteAnimation.Slide);
+              launchScreen(context, DashBoardScreen(),
+                  isNewTask: true,
+                  pageRouteAnimation: PageRouteAnimation.Slide);
             }
             log(e.toString());
           });
-          // appStore.setLoading(false);
         }).catchError((error) {
           appStore.isLoading = false;
           toast(error.toString());
+        });
+      } else {
+        toast(language.pleaseAcceptTermsOfServicePrivacyPolicy);
+      }
+    }
+  }
+
+  Future<void> register() async {
+    hideKeyboard(context);
+    if (signUpFormKey.currentState!.validate()) {
+      signUpFormKey.currentState!.save();
+      if (isAcceptTermsNPrivacy) {
+        appStore.setLoading(true);
+        Map req = {
+          'first_name': firstNameController.text.trim(),
+          'last_name': lastNameController.text.trim(),
+          'username': userNameController.text.trim(),
+          'email': signUpEmailController.text.trim(),
+          "user_type": "rider",
+          "contact_number": signUpPhoneController.text.trim(),
+          "country_code": '+1', // You might need to add country code picker
+          'password': signUpPasswordController.text.trim(),
+          "player_id": sharedPref.getString(PLAYER_ID).validate(),
+        };
+
+        await signUpApi(req).then((value) {
+          authService
+              .signUpWithEmailPassword(
+            context,
+            mobileNumber: signUpPhoneController.text.trim(),
+            email: signUpEmailController.text.trim(),
+            fName: firstNameController.text.trim(),
+            lName: lastNameController.text.trim(),
+            userName: userNameController.text.trim(),
+            password: signUpPasswordController.text.trim(),
+            userType: RIDER,
+          )
+              .then((res) async {
+            //
+          }).catchError((e) {
+            appStore.setLoading(false);
+            toast('$e');
+          });
+        }).catchError((error) {
+          appStore.setLoading(false);
         });
       } else {
         toast(language.pleaseAcceptTermsOfServicePrivacyPolicy);
@@ -153,168 +228,82 @@ class SignInScreenState extends State<SignInScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          Form(
-            key: formKey,
-            child: SingleChildScrollView(
-              padding: EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(height: context.statusBarHeight + 16),
-                  ClipRRect(borderRadius: radius(50), child: Image.asset(ic_app_logo, width: 100, height: 100)),
-                  SizedBox(height: 16),
-                  InkWell(
-                      onTap: () {
-                        // try{
-                        throw Exception("CHECKING  EXCEPTION::::");
-                        // }catch(error,stack){
-                        throw Exception("CHECKING  EXCEPTION222::::");
-                        // FirebaseCrashlytics.instance.recordError(error, stack);
-                        // }
-                      },
-                      child: Text(language.welcome, style: boldTextStyle(size: 22))),
-                  RichText(
-                    text: TextSpan(
-                      children: [
-                        TextSpan(text: '${language.signContinue} ', style: primaryTextStyle(size: 14)),
-                        TextSpan(text: '🚗', style: primaryTextStyle(size: 20)),
+          Column(
+            children: [
+              // Custom App Bar with background image
+              Container(
+                width: double.infinity,
+                height: 250,
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    //assets\assets\images\loginFrame.png
+                    image: AssetImage('assets/assets/images/loginFrame.png'),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                child: Center(
+                    // Commenting out the app logo
+                    /*child: ClipRRect(
+                      borderRadius: radius(50),
+                      child: Image.asset(ic_app_logo, width: 100, height: 100)),*/
+                    ),
+              ),
+              Expanded(
+                child: Transform.translate(
+                  offset: Offset(0, -40),
+                  child: Container(
+                    margin: EdgeInsets.symmetric(horizontal: 20),
+                    decoration: BoxDecoration(
+                      color: AppColors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.black.withOpacity(0.1),
+                          blurRadius: 10,
+                          spreadRadius: 0,
+                        ),
                       ],
                     ),
-                  ),
-                  SizedBox(height: 40),
-                  AppTextField(
-                    controller: emailController,
-                    nextFocus: passFocus,
-                    autoFocus: false,
-                    textFieldType: TextFieldType.EMAIL,
-                    keyboardType: TextInputType.emailAddress,
-                    errorThisFieldRequired: language.thisFieldRequired,
-                    decoration: inputDecoration(context, label: language.email),
-                  ),
-                  SizedBox(height: 16),
-                  AppTextField(
-                    controller: passController,
-                    focus: passFocus,
-                    autoFocus: false,
-                    textFieldType: TextFieldType.PASSWORD,
-                    errorThisFieldRequired: language.thisFieldRequired,
-                    decoration: inputDecoration(context, label: language.password),
-                  ),
-                  SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          SizedBox(
-                            height: 18.0,
-                            width: 18.0,
-                            child: Checkbox(
-                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              activeColor: primaryColor,
-                              value: mIsRemember,
-                              shape: RoundedRectangleBorder(borderRadius: radius(4)),
-                              onChanged: (v) async {
-                                mIsRemember = v!;
-                                if (!mIsRemember) {
-                                  sharedPref.remove(REMEMBER_ME);
-                                } else {
-                                  await sharedPref.setBool(REMEMBER_ME, mIsRemember);
-                                  await sharedPref.setString(USER_EMAIL, emailController.text);
-                                  await sharedPref.setString(USER_PASSWORD, passController.text);
-                                }
-
-                                setState(() {});
-                              },
-                            ),
+                    child: Column(
+                      children: [
+                        // Tab bar for Login/Signup
+                        Padding(
+                          padding: EdgeInsets.fromLTRB(16, 20, 16, 20),
+                          child: TabBar(
+                            controller: _tabController,
+                            labelColor: AppColors.primary,
+                            unselectedLabelColor: AppColors.gray,
+                            indicatorColor: AppColors.primary,
+                            indicatorSize: TabBarIndicatorSize.label,
+                            tabs: [
+                              Tab(text: language.logIn),
+                              Tab(text: language.signUp),
+                            ],
                           ),
-                          SizedBox(width: 8),
-                          inkWellWidget(
-                            onTap: () async {
-                              mIsRemember = !mIsRemember;
-                              setState(() {});
-                            },
-                            child: Text(language.rememberMe, style: primaryTextStyle(size: 14)),
-                          ),
-                        ],
-                      ),
-                      inkWellWidget(
-                        onTap: () {
-                          launchScreen(context, ForgotPasswordScreen(), pageRouteAnimation: PageRouteAnimation.SlideBottomTop);
-                        },
-                        child: Text(language.forgotPassword, style: primaryTextStyle()),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 16),
-                  Row(
-                    children: [
-                      SizedBox(
-                        height: 18,
-                        width: 18,
-                        child: Checkbox(
-                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          activeColor: primaryColor,
-                          value: isAcceptTermsNPrivacy,
-                          shape: RoundedRectangleBorder(borderRadius: radius(4)),
-                          onChanged: (v) async {
-                            isAcceptTermsNPrivacy = v!;
-                            setState(() {});
-                          },
                         ),
-                      ),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: RichText(
-                          text: TextSpan(
+                        Expanded(
+                          child: TabBarView(
+                            controller: _tabController,
                             children: [
-                              TextSpan(text: language.iAgreeToThe + " ", style: primaryTextStyle(size: 12)),
-                              TextSpan(
-                                text: language.termsConditions.splitBefore(' &'),
-                                style: boldTextStyle(color: primaryColor, size: 14),
-                                recognizer: TapGestureRecognizer()
-                                  ..onTap = () {
-                                    if (appStore.termsCondition != null && appStore.termsCondition!.isNotEmpty) {
-                                      launchScreen(context, TermsConditionScreen(title: language.termsConditions, subtitle: appStore.termsCondition), pageRouteAnimation: PageRouteAnimation.Slide);
-                                    } else {
-                                      toast(language.txtURLEmpty);
-                                    }
-                                  },
+                              // Login Tab
+                              SingleChildScrollView(
+                                padding: EdgeInsets.all(16),
+                                child: loginForm(),
                               ),
-                              TextSpan(text: ' & ', style: primaryTextStyle(size: 12)),
-                              TextSpan(
-                                text: language.privacyPolicy,
-                                style: boldTextStyle(color: primaryColor, size: 14),
-                                recognizer: TapGestureRecognizer()
-                                  ..onTap = () {
-                                    if (appStore.privacyPolicy != null && appStore.privacyPolicy!.isNotEmpty) {
-                                      launchScreen(context, TermsConditionScreen(title: language.privacyPolicy, subtitle: appStore.privacyPolicy), pageRouteAnimation: PageRouteAnimation.Slide);
-                                    } else {
-                                      toast(language.txtURLEmpty);
-                                    }
-                                  },
+                              // Signup Tab
+                              SingleChildScrollView(
+                                padding: EdgeInsets.all(16),
+                                child: signUpForm(),
                               ),
                             ],
                           ),
-                          textAlign: TextAlign.left,
                         ),
-                      )
-                    ],
+                      ],
+                    ),
                   ),
-                  SizedBox(height: 32),
-                  AppButtonWidget(
-                    width: MediaQuery.of(context).size.width,
-                    text: language.logIn,
-                    onTap: () async {
-                      logIn();
-                    },
-                  ),
-                  SizedBox(height: 16),
-                  socialWidget(),
-                  SizedBox(height: 16),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
           Observer(
             builder: (context) {
@@ -326,45 +315,505 @@ class SignInScreenState extends State<SignInScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: Column(
-        mainAxisSize: MainAxisSize.min,
+    );
+  }
+
+  Widget loginForm() {
+    return Form(
+      key: loginFormKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(language.donHaveAnAccount, style: primaryTextStyle()),
-                SizedBox(width: 8),
-                inkWellWidget(
-                  onTap: () {
-                    hideKeyboard(context);
-                    launchScreen(context, SignUpScreen(privacyPolicyUrl: appStore.privacyPolicy, termsConditionUrl: appStore.termsCondition));
-                  },
-                  child: Text(language.signUp, style: boldTextStyle(size: 18)),
-                ),
-              ],
+          Text(language.welcome,
+              style: AppTextStyles.sSemiBold16(color: AppColors.textColor)
+                  .copyWith(fontSize: 22)),
+          SizedBox(height: 8),
+          Text(language.signContinue, style: AppTextStyles.sRegular14()),
+          SizedBox(height: 30),
+          TextFormField(
+            controller: emailController,
+            focusNode: emailFocus,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            keyboardType: TextInputType.emailAddress,
+            textInputAction: TextInputAction.next,
+            decoration: InputDecoration(
+              labelText: language.email,
+              prefixIcon: Icon(Icons.email_outlined, color: AppColors.primary),
+              border: InputBorders.custom(
+                  color: AppColors.lightGray, borderRadius: 10),
+              enabledBorder: InputBorders.custom(
+                  color: AppColors.lightGray, borderRadius: 10),
+              focusedBorder: InputBorders.custom(
+                  color: AppColors.primary, borderRadius: 10),
+              fillColor: AppColors.lightGray.withOpacity(0.3),
+              filled: true,
             ),
+            validator: (s) {
+              if (s!.trim().isEmpty) return language.thisFieldRequired;
+              if (!s.trim().validateEmail()) return language.thisFieldRequired;
+              return null;
+            },
+            onFieldSubmitted: (s) =>
+                FocusScope.of(context).requestFocus(passFocus),
           ),
           SizedBox(height: 16),
+          TextFormField(
+            controller: passController,
+            focusNode: passFocus,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            textInputAction: TextInputAction.done,
+            obscureText: true,
+            decoration: InputDecoration(
+              labelText: language.password,
+              prefixIcon: Icon(Icons.lock_outline, color: AppColors.primary),
+              border: InputBorders.custom(
+                  color: AppColors.lightGray, borderRadius: 10),
+              enabledBorder: InputBorders.custom(
+                  color: AppColors.lightGray, borderRadius: 10),
+              focusedBorder: InputBorders.custom(
+                  color: AppColors.primary, borderRadius: 10),
+              fillColor: AppColors.lightGray.withOpacity(0.3),
+              filled: true,
+            ),
+            validator: (s) {
+              if (s!.trim().isEmpty) return language.thisFieldRequired;
+              return null;
+            },
+          ),
+          SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  SizedBox(
+                    height: 18.0,
+                    width: 18.0,
+                    child: Checkbox(
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      activeColor: AppColors.primary,
+                      value: mIsRemember,
+                      shape: RoundedRectangleBorder(borderRadius: radius(4)),
+                      onChanged: (v) async {
+                        mIsRemember = v!;
+                        if (!mIsRemember) {
+                          sharedPref.remove(REMEMBER_ME);
+                        } else {
+                          await sharedPref.setBool(REMEMBER_ME, mIsRemember);
+                          await sharedPref.setString(
+                              USER_EMAIL, emailController.text);
+                          await sharedPref.setString(
+                              USER_PASSWORD, passController.text);
+                        }
+
+                        setState(() {});
+                      },
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  inkWellWidget(
+                    onTap: () async {
+                      mIsRemember = !mIsRemember;
+                      setState(() {});
+                    },
+                    child: Text(language.rememberMe,
+                        style: AppTextStyles.sRegular14()),
+                  ),
+                ],
+              ),
+              inkWellWidget(
+                onTap: () {
+                  launchScreen(context, ForgotPasswordScreen(),
+                      pageRouteAnimation: PageRouteAnimation.SlideBottomTop);
+                },
+                child: Text(language.forgotPassword,
+                    style: AppTextStyles.sMedium14()),
+              ),
+            ],
+          ),
+          SizedBox(height: 16),
+          Row(
+            children: [
+              SizedBox(
+                height: 18,
+                width: 18,
+                child: Checkbox(
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  activeColor: AppColors.primary,
+                  value: isAcceptTermsNPrivacy,
+                  shape: RoundedRectangleBorder(borderRadius: radius(4)),
+                  onChanged: (v) async {
+                    isAcceptTermsNPrivacy = v!;
+                    setState(() {});
+                  },
+                ),
+              ),
+              SizedBox(width: 8),
+              Expanded(
+                child: RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                          text: language.iAgreeToThe + " ",
+                          style: AppTextStyles.sRegular14()
+                              .copyWith(fontSize: 12)),
+                      TextSpan(
+                        text: language.termsConditions.splitBefore(' &'),
+                        style:
+                            AppTextStyles.sSemiBold14(color: AppColors.primary),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
+                            if (appStore.termsCondition != null &&
+                                appStore.termsCondition!.isNotEmpty) {
+                              launchScreen(
+                                  context,
+                                  TermsConditionScreen(
+                                      title: language.termsConditions,
+                                      subtitle: appStore.termsCondition),
+                                  pageRouteAnimation: PageRouteAnimation.Slide);
+                            } else {
+                              toast(language.txtURLEmpty);
+                            }
+                          },
+                      ),
+                      TextSpan(
+                          text: ' & ',
+                          style: AppTextStyles.sRegular14()
+                              .copyWith(fontSize: 12)),
+                      TextSpan(
+                        text: language.privacyPolicy,
+                        style:
+                            AppTextStyles.sSemiBold14(color: AppColors.primary),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
+                            if (appStore.privacyPolicy != null &&
+                                appStore.privacyPolicy!.isNotEmpty) {
+                              launchScreen(
+                                  context,
+                                  TermsConditionScreen(
+                                      title: language.privacyPolicy,
+                                      subtitle: appStore.privacyPolicy),
+                                  pageRouteAnimation: PageRouteAnimation.Slide);
+                            } else {
+                              toast(language.txtURLEmpty);
+                            }
+                          },
+                      ),
+                    ],
+                  ),
+                  textAlign: TextAlign.left,
+                ),
+              )
+            ],
+          ),
+          SizedBox(height: 30),
+          AppButtonWidget(
+            width: MediaQuery.of(context).size.width,
+            text: language.logIn,
+            color: AppColors.primary,
+            textColor: AppColors.white,
+            onTap: () async {
+              logIn();
+            },
+          ),
+          SizedBox(height: 20),
+          socialLoginWidget(),
         ],
       ),
     );
   }
 
-  Widget socialWidget() {
+  Widget signUpForm() {
+    return Form(
+      key: signUpFormKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(language.signUp,
+              style: AppTextStyles.sSemiBold16(color: AppColors.textColor)
+                  .copyWith(fontSize: 22)),
+          SizedBox(height: 8),
+          Text(language.createAccount, style: AppTextStyles.sRegular14()),
+          SizedBox(height: 30),
+          Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: firstNameController,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  textInputAction: TextInputAction.next,
+                  decoration: InputDecoration(
+                    labelText: language.firstName,
+                    prefixIcon:
+                        Icon(Icons.person_outline, color: AppColors.primary),
+                    border: InputBorders.custom(
+                        color: AppColors.lightGray, borderRadius: 10),
+                    enabledBorder: InputBorders.custom(
+                        color: AppColors.lightGray, borderRadius: 10),
+                    focusedBorder: InputBorders.custom(
+                        color: AppColors.primary, borderRadius: 10),
+                    fillColor: AppColors.lightGray.withOpacity(0.3),
+                    filled: true,
+                  ),
+                  validator: (s) {
+                    if (s!.trim().isEmpty) return language.thisFieldRequired;
+                    return null;
+                  },
+                ),
+              ),
+              SizedBox(width: 16),
+              Expanded(
+                child: TextFormField(
+                  controller: lastNameController,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  textInputAction: TextInputAction.next,
+                  decoration: InputDecoration(
+                    labelText: language.lastName,
+                    prefixIcon:
+                        Icon(Icons.person_outline, color: AppColors.primary),
+                    border: InputBorders.custom(
+                        color: AppColors.lightGray, borderRadius: 10),
+                    enabledBorder: InputBorders.custom(
+                        color: AppColors.lightGray, borderRadius: 10),
+                    focusedBorder: InputBorders.custom(
+                        color: AppColors.primary, borderRadius: 10),
+                    fillColor: AppColors.lightGray.withOpacity(0.3),
+                    filled: true,
+                  ),
+                  validator: (s) {
+                    if (s!.trim().isEmpty) return language.thisFieldRequired;
+                    return null;
+                  },
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 16),
+          TextFormField(
+            controller: userNameController,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            textInputAction: TextInputAction.next,
+            decoration: InputDecoration(
+              labelText: language.userName,
+              prefixIcon:
+                  Icon(Icons.account_circle_outlined, color: AppColors.primary),
+              border: InputBorders.custom(
+                  color: AppColors.lightGray, borderRadius: 10),
+              enabledBorder: InputBorders.custom(
+                  color: AppColors.lightGray, borderRadius: 10),
+              focusedBorder: InputBorders.custom(
+                  color: AppColors.primary, borderRadius: 10),
+              fillColor: AppColors.lightGray.withOpacity(0.3),
+              filled: true,
+            ),
+            validator: (s) {
+              if (s!.trim().isEmpty) return language.thisFieldRequired;
+              return null;
+            },
+          ),
+          SizedBox(height: 16),
+          TextFormField(
+            controller: signUpEmailController,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            keyboardType: TextInputType.emailAddress,
+            textInputAction: TextInputAction.next,
+            decoration: InputDecoration(
+              labelText: language.email,
+              prefixIcon: Icon(Icons.email_outlined, color: AppColors.primary),
+              border: InputBorders.custom(
+                  color: AppColors.lightGray, borderRadius: 10),
+              enabledBorder: InputBorders.custom(
+                  color: AppColors.lightGray, borderRadius: 10),
+              focusedBorder: InputBorders.custom(
+                  color: AppColors.primary, borderRadius: 10),
+              fillColor: AppColors.lightGray.withOpacity(0.3),
+              filled: true,
+            ),
+            validator: (s) {
+              if (s!.trim().isEmpty) return language.thisFieldRequired;
+              if (!s.trim().validateEmail()) return language.thisFieldRequired;
+              return null;
+            },
+          ),
+          SizedBox(height: 16),
+          TextFormField(
+            controller: signUpPhoneController,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            keyboardType: TextInputType.phone,
+            textInputAction: TextInputAction.next,
+            decoration: InputDecoration(
+              labelText: language.phoneNumber,
+              prefixIcon: Icon(Icons.phone_outlined, color: AppColors.primary),
+              border: InputBorders.custom(
+                  color: AppColors.lightGray, borderRadius: 10),
+              enabledBorder: InputBorders.custom(
+                  color: AppColors.lightGray, borderRadius: 10),
+              focusedBorder: InputBorders.custom(
+                  color: AppColors.primary, borderRadius: 10),
+              fillColor: AppColors.lightGray.withOpacity(0.3),
+              filled: true,
+            ),
+            validator: (s) {
+              if (s!.trim().isEmpty) return language.thisFieldRequired;
+              return null;
+            },
+          ),
+          SizedBox(height: 16),
+          TextFormField(
+            controller: signUpPasswordController,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            textInputAction: TextInputAction.next,
+            obscureText: true,
+            decoration: InputDecoration(
+              labelText: language.password,
+              prefixIcon: Icon(Icons.lock_outline, color: AppColors.primary),
+              border: InputBorders.custom(
+                  color: AppColors.lightGray, borderRadius: 10),
+              enabledBorder: InputBorders.custom(
+                  color: AppColors.lightGray, borderRadius: 10),
+              focusedBorder: InputBorders.custom(
+                  color: AppColors.primary, borderRadius: 10),
+              fillColor: AppColors.lightGray.withOpacity(0.3),
+              filled: true,
+            ),
+            validator: (String? value) {
+              if (value!.isEmpty) return errorThisFieldRequired;
+              if (value.length < passwordLengthGlobal)
+                return language.passwordLength;
+              return null;
+            },
+          ),
+          SizedBox(height: 16),
+          TextFormField(
+            controller: confirmPasswordController,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            textInputAction: TextInputAction.done,
+            obscureText: true,
+            decoration: InputDecoration(
+              labelText: language.confirmPassword,
+              prefixIcon: Icon(Icons.lock_outline, color: AppColors.primary),
+              border: InputBorders.custom(
+                  color: AppColors.lightGray, borderRadius: 10),
+              enabledBorder: InputBorders.custom(
+                  color: AppColors.lightGray, borderRadius: 10),
+              focusedBorder: InputBorders.custom(
+                  color: AppColors.primary, borderRadius: 10),
+              fillColor: AppColors.lightGray.withOpacity(0.3),
+              filled: true,
+            ),
+            validator: (String? value) {
+              if (value!.isEmpty) return errorThisFieldRequired;
+              if (value.length < passwordLengthGlobal)
+                return language.passwordLength;
+              if (value.trim() != signUpPasswordController.text.trim())
+                return language.bothPasswordNotMatch;
+              return null;
+            },
+          ),
+          SizedBox(height: 16),
+          Row(
+            children: [
+              SizedBox(
+                height: 18,
+                width: 18,
+                child: Checkbox(
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  activeColor: AppColors.primary,
+                  value: isAcceptTermsNPrivacy,
+                  shape: RoundedRectangleBorder(borderRadius: radius(4)),
+                  onChanged: (v) async {
+                    isAcceptTermsNPrivacy = v!;
+                    setState(() {});
+                  },
+                ),
+              ),
+              SizedBox(width: 8),
+              Expanded(
+                child: RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                          text: language.iAgreeToThe + " ",
+                          style: AppTextStyles.sRegular14()
+                              .copyWith(fontSize: 12)),
+                      TextSpan(
+                        text: language.termsConditions.splitBefore(' &'),
+                        style:
+                            AppTextStyles.sSemiBold14(color: AppColors.primary),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
+                            if (appStore.termsCondition != null &&
+                                appStore.termsCondition!.isNotEmpty) {
+                              launchScreen(
+                                  context,
+                                  TermsConditionScreen(
+                                      title: language.termsConditions,
+                                      subtitle: appStore.termsCondition),
+                                  pageRouteAnimation: PageRouteAnimation.Slide);
+                            } else {
+                              toast(language.txtURLEmpty);
+                            }
+                          },
+                      ),
+                      TextSpan(
+                          text: ' & ',
+                          style: AppTextStyles.sRegular14()
+                              .copyWith(fontSize: 12)),
+                      TextSpan(
+                        text: language.privacyPolicy,
+                        style:
+                            AppTextStyles.sSemiBold14(color: AppColors.primary),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
+                            if (appStore.privacyPolicy != null &&
+                                appStore.privacyPolicy!.isNotEmpty) {
+                              launchScreen(
+                                  context,
+                                  TermsConditionScreen(
+                                      title: language.privacyPolicy,
+                                      subtitle: appStore.privacyPolicy),
+                                  pageRouteAnimation: PageRouteAnimation.Slide);
+                            } else {
+                              toast(language.txtURLEmpty);
+                            }
+                          },
+                      ),
+                    ],
+                  ),
+                  textAlign: TextAlign.left,
+                ),
+              )
+            ],
+          ),
+          SizedBox(height: 30),
+          AppButtonWidget(
+            width: MediaQuery.of(context).size.width,
+            text: language.signUp,
+            color: AppColors.primary,
+            textColor: AppColors.white,
+            onTap: () async {
+              register();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget socialLoginWidget() {
     return Column(
       children: [
         Padding(
-          padding: EdgeInsets.all(16),
+          padding: EdgeInsets.all(8),
           child: Row(
             children: [
-              Expanded(child: Divider(color: dividerColor)),
+              Expanded(child: Divider(color: AppColors.lightGray)),
               Padding(
                 padding: EdgeInsets.only(left: 16, right: 16),
-                child: Text(language.orLogInWith, style: primaryTextStyle()),
+                child: Text(language.orLogInWith,
+                    style: AppTextStyles.sRegular14()),
               ),
-              Expanded(child: Divider(color: dividerColor)),
+              Expanded(child: Divider(color: AppColors.lightGray)),
             ],
           ),
         ),
@@ -393,9 +842,12 @@ class SignInScreenState extends State<SignInScreen> {
                 appStore.setLoading(false);
               },
               child: Container(
-                padding: EdgeInsets.all(4),
-                decoration: BoxDecoration(border: Border.all(color: dividerColor), borderRadius: radius(defaultRadius)),
-                child: Image.asset(ic_mobile, fit: BoxFit.cover, height: 30, width: 30),
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                    border: Border.all(color: AppColors.lightGray),
+                    borderRadius: radius(defaultRadius)),
+                child: Image.asset(ic_mobile,
+                    fit: BoxFit.cover, height: 30, width: 30),
               ),
             ),
             if (Platform.isIOS) SizedBox(width: 12),
@@ -414,8 +866,10 @@ class SignInScreenState extends State<SignInScreen> {
 
   Widget socialWidgetComponent({required String img}) {
     return Container(
-      padding: EdgeInsets.all(4),
-      decoration: BoxDecoration(border: Border.all(color: dividerColor), borderRadius: radius(defaultRadius)),
+      padding: EdgeInsets.all(8),
+      decoration: BoxDecoration(
+          border: Border.all(color: AppColors.lightGray),
+          borderRadius: radius(defaultRadius)),
       child: Image.asset(img, fit: BoxFit.cover, height: 30, width: 30),
     );
   }

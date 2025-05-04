@@ -6,7 +6,10 @@ import 'package:flutter_mobx/flutter_mobx.dart';
 
 import '../../main.dart';
 import '../../service/AuthService1.dart';
-import '../../utils/Colors.dart';
+import '../../utils/constant/app_colors.dart';
+import '../../utils/constant/app_image.dart';
+import '../../utils/constant/styles/app_text_style.dart';
+import '../../utils/constant/styles/input_border_styles.dart';
 import '../../utils/Common.dart';
 import '../../utils/Extensions/AppButtonWidget.dart';
 import '../../utils/Extensions/app_common.dart';
@@ -27,7 +30,13 @@ class SignUpScreen extends StatefulWidget {
   final String? privacyPolicyUrl;
   final String? termsConditionUrl;
 
-  SignUpScreen({this.socialLogin = false, this.userName, this.isOtp = false, this.countryCode, this.privacyPolicyUrl, this.termsConditionUrl});
+  SignUpScreen(
+      {this.socialLogin = false,
+      this.userName,
+      this.isOtp = false,
+      this.countryCode,
+      this.privacyPolicyUrl,
+      this.termsConditionUrl});
 
   @override
   SignUpScreenState createState() => SignUpScreenState();
@@ -82,12 +91,18 @@ class SignUpScreenState extends State<SignUpScreen> {
         Map req = {
           'first_name': firstController.text.trim(),
           'last_name': lastNameController.text.trim(),
-          'username': widget.socialLogin ? widget.userName : userNameController.text.trim(),
+          'username': widget.socialLogin
+              ? widget.userName
+              : userNameController.text.trim(),
           'email': emailController.text.trim(),
           "user_type": "rider",
-          "contact_number": widget.socialLogin ? '${widget.userName}' : '${phoneController.text.trim()}',
-          "country_code": widget.socialLogin ? '${widget.countryCode}' : '$countryCode',
-          'password': widget.socialLogin ? widget.userName : passController.text.trim(),
+          "contact_number": widget.socialLogin
+              ? '${widget.userName}'
+              : '${phoneController.text.trim()}',
+          "country_code":
+              widget.socialLogin ? '${widget.countryCode}' : '$countryCode',
+          'password':
+              widget.socialLogin ? widget.userName : passController.text.trim(),
           "player_id": sharedPref.getString(PLAYER_ID).validate(),
           if (widget.socialLogin) 'login_type': 'mobile',
         };
@@ -95,12 +110,18 @@ class SignUpScreenState extends State<SignUpScreen> {
         await signUpApi(req).then((value) {
           authService
               .signUpWithEmailPassword(getContext,
-                  mobileNumber: widget.socialLogin ? '${widget.countryCode}${widget.userName}' : '$countryCode${phoneController.text.trim()}',
+                  mobileNumber: widget.socialLogin
+                      ? '${widget.countryCode}${widget.userName}'
+                      : '$countryCode${phoneController.text.trim()}',
                   email: emailController.text.trim(),
                   fName: firstController.text.trim(),
                   lName: lastNameController.text.trim(),
-                  userName: widget.socialLogin ? widget.userName : userNameController.text.trim(),
-                  password: widget.socialLogin ? widget.userName : passController.text.trim(),
+                  userName: widget.socialLogin
+                      ? widget.userName
+                      : userNameController.text.trim(),
+                  password: widget.socialLogin
+                      ? widget.userName
+                      : passController.text.trim(),
                   userType: RIDER,
                   isOtpLogin: widget.socialLogin)
               .then((res) async {
@@ -123,6 +144,16 @@ class SignUpScreenState extends State<SignUpScreen> {
     return Scaffold(
       body: Stack(
         children: [
+          Container(
+            width: double.infinity,
+            height: MediaQuery.of(context).size.height * 0.4,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage(AppImages.loginFrame),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
           SingleChildScrollView(
             padding: EdgeInsets.all(16),
             child: Form(
@@ -130,227 +161,461 @@ class SignUpScreenState extends State<SignUpScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(height: context.statusBarHeight + 16),
-                  ClipRRect(borderRadius: radius(50), child: Image.asset(ic_app_logo, width: 100, height: 100)),
-                  SizedBox(height: 16),
-                  Text(language.createAccount, style: boldTextStyle(size: 22)),
-                  RichText(
-                    text: TextSpan(
-                      children: [
-                        TextSpan(text: 'Sign up to get started ', style: primaryTextStyle(size: 14)),
-                        TextSpan(text: '🚗', style: primaryTextStyle(size: 20)),
+                  SizedBox(height: context.statusBarHeight + 40),
+                  Container(
+                    padding: EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: ClipRRect(
+                        borderRadius: radius(50),
+                        child:
+                            Image.asset(ic_app_logo, width: 100, height: 100)),
+                  ),
+                  SizedBox(height: 24),
+                  Container(
+                    padding: EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: AppColors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.black.withOpacity(0.1),
+                          blurRadius: 10,
+                          offset: Offset(0, 5),
+                        ),
                       ],
                     ),
-                  ),
-                  SizedBox(height: 32),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: AppTextField(
-                          controller: firstController,
-                          focus: firstNameFocus,
-                          nextFocus: lastNameFocus,
-                          autoFocus: false,
-                          textFieldType: TextFieldType.NAME,
-                          errorThisFieldRequired: errorThisFieldRequired,
-                          decoration: inputDecoration(context, label: language.firstName),
-                        ),
-                      ),
-                      SizedBox(width: 20),
-                      Expanded(
-                        child: AppTextField(
-                          controller: lastNameController,
-                          focus: lastNameFocus,
-                          nextFocus: userNameFocus,
-                          autoFocus: false,
-                          textFieldType: TextFieldType.OTHER,
-                          errorThisFieldRequired: errorThisFieldRequired,
-                          decoration: inputDecoration(context, label: language.lastName),
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (widget.socialLogin != true) SizedBox(height: 20),
-                  if (widget.socialLogin != true)
-                    AppTextField(
-                      controller: userNameController,
-                      focus: userNameFocus,
-                      nextFocus: emailFocus,
-                      autoFocus: false,
-                      textFieldType: TextFieldType.USERNAME,
-                      errorThisFieldRequired: errorThisFieldRequired,
-                      decoration: inputDecoration(context, label: language.userName),
-                    ),
-                  SizedBox(height: 20),
-                  AppTextField(
-                    controller: emailController,
-                    focus: emailFocus,
-                    nextFocus: phoneFocus,
-                    autoFocus: false,
-                    textFieldType: TextFieldType.EMAIL,
-                    keyboardType: TextInputType.emailAddress,
-                    errorThisFieldRequired: errorThisFieldRequired,
-                    decoration: inputDecoration(context, label: language.email),
-                  ),
-                  if (widget.socialLogin != true) SizedBox(height: 20),
-                  if (widget.socialLogin != true)
-                    AppTextField(
-                      controller: phoneController,
-                      textFieldType: TextFieldType.PHONE,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      focus: phoneFocus,
-                      nextFocus: passFocus,
-                      decoration: inputDecoration(
-                        context,
-                        label: language.phoneNumber,
-                        prefixIcon: IntrinsicHeight(
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
+                    child: Column(
+                      children: [
+                        Text(language.createAccount,
+                            style: AppTextStyles.sSemiBold16(
+                                    color: AppColors.textColor)
+                                .copyWith(fontSize: 24)),
+                        RichText(
+                          text: TextSpan(
                             children: [
-                              CountryCodePicker(
-                                padding: EdgeInsets.zero,
-                                initialSelection: countryCode,
-                                showCountryOnly: false,
-                                dialogSize: Size(MediaQuery.of(context).size.width - 60, MediaQuery.of(context).size.height * 0.6),
-                                showFlag: true,
-                                showFlagDialog: true,
-                                showOnlyCountryWhenClosed: false,
-                                alignLeft: false,
-                                textStyle: primaryTextStyle(),
-                                dialogBackgroundColor: Theme.of(context).cardColor,
-                                barrierColor: Colors.black12,
-                                dialogTextStyle: primaryTextStyle(),
-                                searchDecoration: InputDecoration(
-                                  focusColor: primaryColor,
-                                  iconColor: Theme.of(context).dividerColor,
-                                  enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Theme.of(context).dividerColor)),
-                                  focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: primaryColor)),
-                                ),
-                                searchStyle: primaryTextStyle(),
-                                onInit: (c) {
-                                  countryCode = c!.dialCode!;
-                                },
-                                onChanged: (c) {
-                                  countryCode = c.dialCode!;
-                                },
-                              ),
-                              VerticalDivider(color: Colors.grey.withOpacity(0.5)),
+                              TextSpan(
+                                  text: 'Sign up to get started ',
+                                  style: AppTextStyles.sRegular14(
+                                      color: AppColors.gray)),
+                              TextSpan(
+                                  text: '🚗',
+                                  style: AppTextStyles.sSemiBold16()
+                                      .copyWith(fontSize: 20)),
                             ],
                           ),
                         ),
-                      ),
-                      validator: (value) {
-                        if (value!.trim().isEmpty) return errorThisFieldRequired;
-                        return null;
-                      },
-                    ),
-                  if (widget.socialLogin != true) SizedBox(height: 20),
-                  if (widget.socialLogin != true)
-                    Row(
-                      children: [
-                        Expanded(
-                          child: AppTextField(
-                            controller: passController,
-                            focus: passFocus,
-                            autoFocus: false,
-                            nextFocus: confirmPass,
-                            textFieldType: TextFieldType.PASSWORD,
-                            errorThisFieldRequired: errorThisFieldRequired,
-                            decoration: inputDecoration(context, label: language.password),
-                            validator: (String? value) {
-                              if (value!.isEmpty) return errorThisFieldRequired;
-                              if (value.length < passwordLengthGlobal) return language.passwordLength;
+                        SizedBox(height: 32),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextFormField(
+                                controller: firstController,
+                                focusNode: firstNameFocus,
+                                textInputAction: TextInputAction.next,
+                                autovalidateMode:
+                                    AutovalidateMode.onUserInteraction,
+                                decoration: InputDecoration(
+                                  labelText: language.firstName,
+                                  prefixIcon: Icon(Icons.person_outline,
+                                      color: AppColors.primary),
+                                  border: InputBorders.custom(
+                                      color: AppColors.lightGray,
+                                      borderRadius: 10),
+                                  enabledBorder: InputBorders.custom(
+                                      color: AppColors.lightGray,
+                                      borderRadius: 10),
+                                  focusedBorder: InputBorders.custom(
+                                      color: AppColors.primary,
+                                      borderRadius: 10),
+                                  fillColor:
+                                      AppColors.lightGray.withOpacity(0.3),
+                                  filled: true,
+                                ),
+                                validator: (s) {
+                                  if (s!.trim().isEmpty)
+                                    return errorThisFieldRequired;
+                                  return null;
+                                },
+                                onFieldSubmitted: (s) => FocusScope.of(context)
+                                    .requestFocus(lastNameFocus),
+                              ),
+                            ),
+                            SizedBox(width: 20),
+                            Expanded(
+                              child: TextFormField(
+                                controller: lastNameController,
+                                focusNode: lastNameFocus,
+                                textInputAction: TextInputAction.next,
+                                autovalidateMode:
+                                    AutovalidateMode.onUserInteraction,
+                                decoration: InputDecoration(
+                                  labelText: language.lastName,
+                                  prefixIcon: Icon(Icons.person_outline,
+                                      color: AppColors.primary),
+                                  border: InputBorders.custom(
+                                      color: AppColors.lightGray,
+                                      borderRadius: 10),
+                                  enabledBorder: InputBorders.custom(
+                                      color: AppColors.lightGray,
+                                      borderRadius: 10),
+                                  focusedBorder: InputBorders.custom(
+                                      color: AppColors.primary,
+                                      borderRadius: 10),
+                                  fillColor:
+                                      AppColors.lightGray.withOpacity(0.3),
+                                  filled: true,
+                                ),
+                                validator: (s) {
+                                  if (s!.trim().isEmpty)
+                                    return errorThisFieldRequired;
+                                  return null;
+                                },
+                                onFieldSubmitted: (s) => FocusScope.of(context)
+                                    .requestFocus(userNameFocus),
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (widget.socialLogin != true) SizedBox(height: 20),
+                        if (widget.socialLogin != true)
+                          TextFormField(
+                            controller: userNameController,
+                            focusNode: userNameFocus,
+                            textInputAction: TextInputAction.next,
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
+                            decoration: InputDecoration(
+                              labelText: language.userName,
+                              prefixIcon: Icon(Icons.account_circle_outlined,
+                                  color: AppColors.primary),
+                              border: InputBorders.custom(
+                                  color: AppColors.lightGray, borderRadius: 10),
+                              enabledBorder: InputBorders.custom(
+                                  color: AppColors.lightGray, borderRadius: 10),
+                              focusedBorder: InputBorders.custom(
+                                  color: AppColors.primary, borderRadius: 10),
+                              fillColor: AppColors.lightGray.withOpacity(0.3),
+                              filled: true,
+                            ),
+                            validator: (s) {
+                              if (s!.trim().isEmpty)
+                                return errorThisFieldRequired;
                               return null;
                             },
+                            onFieldSubmitted: (s) =>
+                                FocusScope.of(context).requestFocus(emailFocus),
                           ),
+                        SizedBox(height: 20),
+                        TextFormField(
+                          controller: emailController,
+                          focusNode: emailFocus,
+                          textInputAction: TextInputAction.next,
+                          keyboardType: TextInputType.emailAddress,
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          decoration: InputDecoration(
+                            labelText: language.email,
+                            prefixIcon: Icon(Icons.email_outlined,
+                                color: AppColors.primary),
+                            border: InputBorders.custom(
+                                color: AppColors.lightGray, borderRadius: 10),
+                            enabledBorder: InputBorders.custom(
+                                color: AppColors.lightGray, borderRadius: 10),
+                            focusedBorder: InputBorders.custom(
+                                color: AppColors.primary, borderRadius: 10),
+                            fillColor: AppColors.lightGray.withOpacity(0.3),
+                            filled: true,
+                          ),
+                          validator: (s) {
+                            if (s!.trim().isEmpty)
+                              return errorThisFieldRequired;
+                            if (!s.trim().validateEmail())
+                              return errorThisFieldRequired;
+                            return null;
+                          },
+                          onFieldSubmitted: (s) =>
+                              FocusScope.of(context).requestFocus(phoneFocus),
                         ),
-                        if (widget.socialLogin != true) SizedBox(width: 16),
+                        if (widget.socialLogin != true) SizedBox(height: 20),
                         if (widget.socialLogin != true)
-                          Expanded(
-                            child: AppTextField(
-                              controller: confirmPassController,
-                              focus: confirmPass,
-                              autoFocus: false,
-                              textFieldType: TextFieldType.PASSWORD,
-                              errorThisFieldRequired: errorThisFieldRequired,
-                              decoration: inputDecoration(context, label: language.confirmPassword),
-                              validator: (String? value) {
-                                if (value!.isEmpty) return errorThisFieldRequired;
-                                if (value.length < passwordLengthGlobal) return language.passwordLength;
-                                if (value.trim() != passController.text.trim()) return language.bothPasswordNotMatch;
-                                return null;
-                              },
+                          TextFormField(
+                            controller: phoneController,
+                            focusNode: phoneFocus,
+                            textInputAction: TextInputAction.next,
+                            keyboardType: TextInputType.phone,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly
+                            ],
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
+                            decoration: InputDecoration(
+                              labelText: language.phoneNumber,
+                              fillColor: AppColors.lightGray.withOpacity(0.3),
+                              filled: true,
+                              border: InputBorders.custom(
+                                  color: AppColors.lightGray, borderRadius: 10),
+                              enabledBorder: InputBorders.custom(
+                                  color: AppColors.lightGray, borderRadius: 10),
+                              focusedBorder: InputBorders.custom(
+                                  color: AppColors.primary, borderRadius: 10),
+                              prefixIcon: IntrinsicHeight(
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    CountryCodePicker(
+                                      padding: EdgeInsets.zero,
+                                      initialSelection: countryCode,
+                                      showCountryOnly: false,
+                                      dialogSize: Size(
+                                          MediaQuery.of(context).size.width -
+                                              60,
+                                          MediaQuery.of(context).size.height *
+                                              0.6),
+                                      showFlag: true,
+                                      showFlagDialog: true,
+                                      showOnlyCountryWhenClosed: false,
+                                      alignLeft: false,
+                                      textStyle: AppTextStyles.sRegular14(),
+                                      dialogBackgroundColor:
+                                          Theme.of(context).cardColor,
+                                      barrierColor: Colors.black12,
+                                      dialogTextStyle:
+                                          AppTextStyles.sRegular14(),
+                                      searchDecoration: InputDecoration(
+                                        focusColor: AppColors.primary,
+                                        iconColor:
+                                            Theme.of(context).dividerColor,
+                                        enabledBorder: UnderlineInputBorder(
+                                            borderSide: BorderSide(
+                                                color: Theme.of(context)
+                                                    .dividerColor)),
+                                        focusedBorder: UnderlineInputBorder(
+                                            borderSide: BorderSide(
+                                                color: AppColors.primary)),
+                                      ),
+                                      searchStyle: AppTextStyles.sRegular14(),
+                                      onInit: (c) {
+                                        countryCode = c!.dialCode!;
+                                      },
+                                      onChanged: (c) {
+                                        countryCode = c.dialCode!;
+                                      },
+                                    ),
+                                    VerticalDivider(
+                                        color: AppColors.gray.withOpacity(0.5)),
+                                  ],
+                                ),
+                              ),
                             ),
+                            validator: (value) {
+                              if (value!.trim().isEmpty)
+                                return errorThisFieldRequired;
+                              return null;
+                            },
+                            onFieldSubmitted: (s) =>
+                                FocusScope.of(context).requestFocus(passFocus),
                           ),
-                      ],
-                    ),
-                  SizedBox(height: 16),
-                  Row(
-                    children: [
-                      SizedBox(
-                        height: 18,
-                        width: 18,
-                        child: Checkbox(
-                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          activeColor: primaryColor,
-                          value: isAcceptedTc,
-                          shape: RoundedRectangleBorder(borderRadius: radius(4)),
-                          onChanged: (v) async {
-                            isAcceptedTc = v!;
-                            setState(() {});
+                        if (widget.socialLogin != true) SizedBox(height: 20),
+                        if (widget.socialLogin != true)
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextFormField(
+                                  controller: passController,
+                                  focusNode: passFocus,
+                                  textInputAction: TextInputAction.next,
+                                  obscureText: true,
+                                  autovalidateMode:
+                                      AutovalidateMode.onUserInteraction,
+                                  decoration: InputDecoration(
+                                    labelText: language.password,
+                                    prefixIcon: Icon(Icons.lock_outline,
+                                        color: AppColors.primary),
+                                    border: InputBorders.custom(
+                                        color: AppColors.lightGray,
+                                        borderRadius: 10),
+                                    enabledBorder: InputBorders.custom(
+                                        color: AppColors.lightGray,
+                                        borderRadius: 10),
+                                    focusedBorder: InputBorders.custom(
+                                        color: AppColors.primary,
+                                        borderRadius: 10),
+                                    fillColor:
+                                        AppColors.lightGray.withOpacity(0.3),
+                                    filled: true,
+                                  ),
+                                  validator: (String? value) {
+                                    if (value!.isEmpty)
+                                      return errorThisFieldRequired;
+                                    if (value.length < passwordLengthGlobal)
+                                      return language.passwordLength;
+                                    return null;
+                                  },
+                                  onFieldSubmitted: (s) =>
+                                      FocusScope.of(context)
+                                          .requestFocus(confirmPass),
+                                ),
+                              ),
+                              if (widget.socialLogin != true)
+                                SizedBox(width: 16),
+                              if (widget.socialLogin != true)
+                                Expanded(
+                                  child: TextFormField(
+                                    controller: confirmPassController,
+                                    focusNode: confirmPass,
+                                    textInputAction: TextInputAction.done,
+                                    obscureText: true,
+                                    autovalidateMode:
+                                        AutovalidateMode.onUserInteraction,
+                                    decoration: InputDecoration(
+                                      labelText: language.confirmPassword,
+                                      prefixIcon: Icon(Icons.lock_outline,
+                                          color: AppColors.primary),
+                                      border: InputBorders.custom(
+                                          color: AppColors.lightGray,
+                                          borderRadius: 10),
+                                      enabledBorder: InputBorders.custom(
+                                          color: AppColors.lightGray,
+                                          borderRadius: 10),
+                                      focusedBorder: InputBorders.custom(
+                                          color: AppColors.primary,
+                                          borderRadius: 10),
+                                      fillColor:
+                                          AppColors.lightGray.withOpacity(0.3),
+                                      filled: true,
+                                    ),
+                                    validator: (String? value) {
+                                      if (value!.isEmpty)
+                                        return errorThisFieldRequired;
+                                      if (value.length < passwordLengthGlobal)
+                                        return language.passwordLength;
+                                      if (value.trim() !=
+                                          passController.text.trim())
+                                        return language.bothPasswordNotMatch;
+                                      return null;
+                                    },
+                                  ),
+                                ),
+                            ],
+                          ),
+                        SizedBox(height: 16),
+                        Row(
+                          children: [
+                            SizedBox(
+                              height: 18,
+                              width: 18,
+                              child: Checkbox(
+                                materialTapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
+                                activeColor: AppColors.primary,
+                                value: isAcceptedTc,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: radius(4)),
+                                onChanged: (v) async {
+                                  isAcceptedTc = v!;
+                                  setState(() {});
+                                },
+                              ),
+                            ),
+                            SizedBox(width: 16),
+                            Expanded(
+                              child: RichText(
+                                text: TextSpan(children: [
+                                  TextSpan(
+                                      text: '${language.iAgreeToThe} ',
+                                      style: AppTextStyles.sRegular14(
+                                          color: AppColors.gray)),
+                                  TextSpan(
+                                    text: language.termsConditions,
+                                    style: AppTextStyles.sSemiBold14(
+                                        color: AppColors.primary),
+                                    recognizer: TapGestureRecognizer()
+                                      ..onTap = () {
+                                        if (widget.termsConditionUrl != null &&
+                                            widget.termsConditionUrl!
+                                                .isNotEmpty) {
+                                          launchScreen(
+                                              context,
+                                              TermsConditionScreen(
+                                                  title:
+                                                      language.termsConditions,
+                                                  subtitle:
+                                                      widget.termsConditionUrl),
+                                              pageRouteAnimation:
+                                                  PageRouteAnimation.Slide);
+                                        } else {
+                                          toast(language.txtURLEmpty);
+                                        }
+                                      },
+                                  ),
+                                  TextSpan(
+                                      text: ' & ',
+                                      style: AppTextStyles.sRegular14(
+                                          color: AppColors.gray)),
+                                  TextSpan(
+                                    text: language.privacyPolicy,
+                                    style: AppTextStyles.sSemiBold14(
+                                        color: AppColors.primary),
+                                    recognizer: TapGestureRecognizer()
+                                      ..onTap = () {
+                                        if (widget.privacyPolicyUrl != null &&
+                                            widget
+                                                .privacyPolicyUrl!.isNotEmpty) {
+                                          launchScreen(
+                                              context,
+                                              TermsConditionScreen(
+                                                  title: language.privacyPolicy,
+                                                  subtitle:
+                                                      widget.privacyPolicyUrl),
+                                              pageRouteAnimation:
+                                                  PageRouteAnimation.Slide);
+                                        } else {
+                                          toast(language.txtURLEmpty);
+                                        }
+                                      },
+                                  ),
+                                ]),
+                                textAlign: TextAlign.left,
+                              ),
+                            )
+                          ],
+                        ),
+                        SizedBox(height: 32),
+                        AppButtonWidget(
+                          width: MediaQuery.of(context).size.width,
+                          text: language.signUp,
+                          color: AppColors.primary,
+                          textColor: AppColors.white,
+                          onTap: () async {
+                            register();
                           },
                         ),
-                      ),
-                      SizedBox(width: 16),
-                      Expanded(
-                        child: RichText(
-                          text: TextSpan(children: [
-                            TextSpan(text: '${language.iAgreeToThe} ', style: secondaryTextStyle()),
-                            TextSpan(
-                              text: language.termsConditions,
-                              style: boldTextStyle(color: primaryColor, size: 14),
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () {
-                                  if (widget.termsConditionUrl != null && widget.termsConditionUrl!.isNotEmpty) {
-                                    launchScreen(context, TermsConditionScreen(title: language.termsConditions, subtitle: widget.termsConditionUrl), pageRouteAnimation: PageRouteAnimation.Slide);
-                                  } else {
-                                    toast(language.txtURLEmpty);
-                                  }
-                                },
-                            ),
-                            TextSpan(text: ' & ', style: secondaryTextStyle()),
-                            TextSpan(
-                              text: language.privacyPolicy,
-                              style: boldTextStyle(color: primaryColor, size: 14),
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () {
-                                  if (widget.privacyPolicyUrl != null && widget.privacyPolicyUrl!.isNotEmpty) {
-                                    launchScreen(context, TermsConditionScreen(title: language.privacyPolicy, subtitle: widget.privacyPolicyUrl), pageRouteAnimation: PageRouteAnimation.Slide);
-                                  } else {
-                                    toast(language.txtURLEmpty);
-                                  }
-                                },
-                            ),
-                          ]),
-                          textAlign: TextAlign.left,
-                        ),
-                      )
-                    ],
-                  ),
-                  SizedBox(height: 32),
-                  AppButtonWidget(
-                    width: MediaQuery.of(context).size.width,
-                    text: language.signUp,
-                    onTap: () async {
-                      register();
-                    },
+                      ],
+                    ),
                   ),
                   SizedBox(height: 20),
                 ],
               ),
             ),
           ),
-          Positioned(top: context.statusBarHeight + 4, child: BackButton()),
+          Positioned(
+            top: context.statusBarHeight + 4,
+            left: 4,
+            child: Material(
+              color: AppColors.white.withOpacity(0.9),
+              shape: CircleBorder(),
+              child: InkWell(
+                onTap: () => Navigator.pop(context),
+                borderRadius: BorderRadius.circular(30),
+                child: Container(
+                  padding: EdgeInsets.all(8),
+                  child: Icon(Icons.arrow_back, color: AppColors.primary),
+                ),
+              ),
+            ),
+          ),
           Observer(builder: (context) {
             return Visibility(
               visible: appStore.isLoading,
@@ -367,13 +632,16 @@ class SignUpScreenState extends State<SignUpScreen> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(language.alreadyHaveAnAccount, style: primaryTextStyle()),
+                Text(language.alreadyHaveAnAccount,
+                    style: AppTextStyles.sRegular14()),
                 SizedBox(width: 8),
                 inkWellWidget(
                   onTap: () {
                     Navigator.pop(context);
                   },
-                  child: Text(language.logIn, style: boldTextStyle(color: primaryColor)),
+                  child: Text(language.logIn,
+                      style:
+                          AppTextStyles.sSemiBold14(color: AppColors.primary)),
                 ),
               ],
             ),
