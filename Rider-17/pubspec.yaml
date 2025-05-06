@@ -12,6 +12,18 @@ dependencies:
   flutter:
     sdk: flutter
 
+  dartz: ^0.10.1
+  equatable: ^2.0.7
+
+
+  flutter_bloc: 
+
+  flutter_screenutil: ^5.9.3
+  flutter_svg: ^2.0.17
+  get_it: ^8.0.3
+
+  pin_code_fields: ^8.0.1
+
   cupertino_icons: ^1.0.8
   # TOAST
   fluttertoast: ^8.2.8
@@ -121,3 +133,11 @@ flutter:
     - images/json_files/
     - images/icons/
     - staticjson/
+    - assets/assets/icons/
+    - assets/assets/icons/champion_home.svg
+    - assets/assets/icons/clock.svg
+    - assets/assets/icons/star_home.svg
+    - assets/assets/icons/wallet_home.svg
+    - assets/assets/images/
+    - assets/assets/logo.png
+    - assets/assets/

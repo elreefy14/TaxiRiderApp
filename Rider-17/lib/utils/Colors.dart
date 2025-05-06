@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'constant/app_colors.dart';
+import '../main.dart';
 
-import '../../main.dart';
-
-Color primaryColor = Color(0xFF3D3D3D);
-Color borderColor = Color(0xFFEAEAEA);
+Color primaryColor = AppColors.primary;
+Color borderColor = AppColors.lightGray;
 const scaffoldSecondaryDark = Color(0xFF1E1E1E);
 const scaffoldColorDark = Color(0xFF090909);
 const scaffoldColorLight = Colors.white;

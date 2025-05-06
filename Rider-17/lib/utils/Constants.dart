@@ -7,11 +7,12 @@ const mAppName = 'Mighty Rider';
 //endregion
 
 // region Google map key
-const GOOGLE_MAP_API_KEY = 'YOUR_MAP_KEY';
+const GOOGLE_MAP_API_KEY = 'AIzaSyB2alUYyH1P5HlmbvdUXBDsBpIruxr6BLU';
 //endregion
 
 //region DomainUrl
-const DOMAIN_URL = 'YOUR_BASE_URL'; // Don't add slash at the end of the url
+const DOMAIN_URL =
+    'https://masark-sa.com'; // Don't add slash at the end of the url
 //endregion
 
 //region OneSignal Keys
@@ -195,8 +196,10 @@ const RIDE_FOR_OTHER = 'RIDE_FOR_OTHER';
 const IS_MULTI_DROP = 'RIDE_MULTIPLE_DROP_LOCATION';
 const RIDE_IS_SCHEDULE_RIDE = 'RIDE_IS_SCHEDULE_RIDE';
 const IS_BID_ENABLE = 'is_bidding';
-const MAX_TIME_FOR_RIDER_MINUTE = 'max_time_for_find_drivers_for_regular_ride_in_minute';
-const MAX_TIME_FOR_DRIVER_SECOND = 'ride_accept_decline_duration_for_driver_in_second';
+const MAX_TIME_FOR_RIDER_MINUTE =
+    'max_time_for_find_drivers_for_regular_ride_in_minute';
+const MAX_TIME_FOR_DRIVER_SECOND =
+    'ride_accept_decline_duration_for_driver_in_second';
 const MIN_AMOUNT_TO_ADD = 'min_amount_to_add';
 const MAX_AMOUNT_TO_ADD = 'max_amount_to_add';
 //endregion

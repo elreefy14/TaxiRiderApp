@@ -80,9 +80,12 @@ void main() async {
     }
   }
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
-  appStore.setLanguage(sharedPref.getString(SELECTED_LANGUAGE_CODE) ?? defaultLanguageCode);
-  await appStore.setLoggedIn(sharedPref.getBool(IS_LOGGED_IN) ?? false, isInitializing: true);
-  await appStore.setUserEmail(sharedPref.getString(USER_EMAIL) ?? '', isInitialization: true);
+  appStore.setLanguage(
+      sharedPref.getString(SELECTED_LANGUAGE_CODE) ?? defaultLanguageCode);
+  await appStore.setLoggedIn(sharedPref.getBool(IS_LOGGED_IN) ?? false,
+      isInitializing: true);
+  await appStore.setUserEmail(sharedPref.getString(USER_EMAIL) ?? '',
+      isInitialization: true);
   await appStore.setUserProfile(sharedPref.getString(USER_PROFILE_PHOTO) ?? '');
   try {
     initJsonFile();
@@ -145,7 +148,8 @@ class _MyAppState extends State<MyApp> {
     connectivitySubscription = Connectivity().onConnectivityChanged.listen((e) {
       if (e.contains(ConnectivityResult.none)) {
         log('not connected');
-        launchScreen(navigatorKey.currentState!.overlay!.context, NoInternetScreen());
+        launchScreen(
+            navigatorKey.currentState!.overlay!.context, NoInternetScreen());
       } else {
         if (netScreenKey.currentContext != null) {
           if (Navigator.canPop(navigatorKey.currentState!.overlay!.context)) {
@@ -172,7 +176,8 @@ class _MyAppState extends State<MyApp> {
         },
         home: SplashScreen(),
         supportedLocales: getSupportedLocales(),
-        locale: Locale(appStore.selectedLanguage.validate(value: defaultLanguageCode)),
+        locale: Locale(
+            appStore.selectedLanguage.validate(value: defaultLanguageCode)),
         localizationsDelegates: [
           AppLocalizations(),
           CountryLocalizations.delegate,
@@ -188,7 +193,8 @@ class _MyAppState extends State<MyApp> {
 
 class MyBehavior extends ScrollBehavior {
   @override
-  Widget buildOverscrollIndicator(BuildContext context, Widget child, ScrollableDetails details) {
+  Widget buildOverscrollIndicator(
+      BuildContext context, Widget child, ScrollableDetails details) {
     return child;
   }
 }
