@@ -21,6 +21,7 @@ dependencies:
   flutter_screenutil: ^5.9.3
   flutter_svg: ^2.0.17
   get_it: ^8.0.3
+  flutter_slidable: ^3.0.1
 
   pin_code_fields: ^8.0.1
 
@@ -148,7 +149,7 @@ flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/assets/logo.png"
-  adaptive_icon_background: "#4CAF50" # Green background color to match the logo
+  adaptive_icon_background: "#FFFFFF"
   adaptive_icon_foreground: "assets/assets/logo.png"
   min_sdk_android: 21
   remove_alpha_ios: true
