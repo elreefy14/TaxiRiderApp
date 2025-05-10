@@ -45,7 +45,8 @@ class BankInfoScreenState extends State<BankInfoScreen> {
         bankDetail = value.data!.userBankAccount!;
         bankNameController.text = bankDetail!.bankName.validate();
         bankCodeController.text = bankDetail!.bankCode.validate();
-        accountHolderNameController.text = bankDetail!.accountHolderName.validate();
+        accountHolderNameController.text =
+            bankDetail!.accountHolderName.validate();
         accountNumberController.text = bankDetail!.accountNumber.validate();
         routingController.text = bankDetail!.routingNumber.validate();
         ibanController.text = bankDetail!.bankIban.validate();
@@ -91,8 +92,22 @@ class BankInfoScreenState extends State<BankInfoScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(language.bankInfo, style: boldTextStyle(color: Colors.white)),
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(100),
+        child: AppBar(
+          flexibleSpace: Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/assets/images/backgroundFrame.png'),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          title: Text(language.bankInfo,
+              style: boldTextStyle(color: Colors.white)),
+        ),
       ),
       body: Form(
         key: formKey,
@@ -105,21 +120,24 @@ class BankInfoScreenState extends State<BankInfoScreen> {
                   AppTextField(
                     controller: bankNameController,
                     textFieldType: TextFieldType.NAME,
-                    decoration: inputDecoration(context, label: language.bankName),
+                    decoration:
+                        inputDecoration(context, label: language.bankName),
                   ),
                   SizedBox(height: 16),
                   AppTextField(
                     controller: bankCodeController,
                     textFieldType: TextFieldType.NAME,
                     errorThisFieldRequired: language.thisFieldRequired,
-                    decoration: inputDecoration(context, label: language.bankCode),
+                    decoration:
+                        inputDecoration(context, label: language.bankCode),
                   ),
                   SizedBox(height: 16),
                   AppTextField(
                     controller: accountHolderNameController,
                     textFieldType: TextFieldType.NAME,
                     errorThisFieldRequired: language.thisFieldRequired,
-                    decoration: inputDecoration(context, label: language.accountHolderName),
+                    decoration: inputDecoration(context,
+                        label: language.accountHolderName),
                   ),
                   SizedBox(height: 16),
                   AppTextField(
@@ -127,14 +145,16 @@ class BankInfoScreenState extends State<BankInfoScreen> {
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     textFieldType: TextFieldType.PHONE,
                     errorThisFieldRequired: language.thisFieldRequired,
-                    decoration: inputDecoration(context, label: language.accountNumber),
+                    decoration:
+                        inputDecoration(context, label: language.accountNumber),
                   ),
                   SizedBox(height: 16),
                   AppTextField(
                     controller: routingController,
                     textFieldType: TextFieldType.OTHER,
                     // errorThisFieldRequired: language.thisFieldRequired,
-                    decoration: inputDecoration(context, label: language.routingNumber),
+                    decoration:
+                        inputDecoration(context, label: language.routingNumber),
                   ),
                   SizedBox(height: 16),
                   AppTextField(
@@ -165,7 +185,9 @@ class BankInfoScreenState extends State<BankInfoScreen> {
       bottomNavigationBar: Padding(
         padding: EdgeInsets.all(16),
         child: AppButtonWidget(
-          text: bankDetail != null ? language.updateBankDetail : language.addBankDetail,
+          text: bankDetail != null
+              ? language.updateBankDetail
+              : language.addBankDetail,
           color: primaryColor,
           textStyle: boldTextStyle(color: Colors.white),
           onTap: () {

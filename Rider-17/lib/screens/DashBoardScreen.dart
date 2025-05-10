@@ -78,6 +78,10 @@ class DashBoardScreenState extends State<DashBoardScreen>
   late AnimationController _quickActionAnimationController;
   late Animation<Offset> _quickActionSlideAnimation;
 
+  late AnimationController _headerAnimationController;
+  late Animation<double> _headerFadeAnimation;
+  late Animation<Offset> _headerSlideAnimation;
+
   bool isMapReady = false;
   bool isFirstLoad = true;
   bool isSearchBarFocused = false;
@@ -134,9 +138,35 @@ class DashBoardScreenState extends State<DashBoardScreen>
       ),
     );
 
+    _headerAnimationController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 1000),
+    );
+
+    _headerFadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(
+      CurvedAnimation(
+        parent: _headerAnimationController,
+        curve: Interval(0.0, 0.6, curve: Curves.easeOut),
+      ),
+    );
+
+    _headerSlideAnimation = Tween<Offset>(
+      begin: Offset(0, -0.5),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(
+        parent: _headerAnimationController,
+        curve: Interval(0.0, 0.7, curve: Curves.easeOut),
+      ),
+    );
+
     // Start animations
     Future.delayed(Duration(milliseconds: 150), () {
       _mapElementsAnimationController.forward();
+      _headerAnimationController.forward();
     });
 
     Future.delayed(Duration(milliseconds: 600), () {
@@ -462,7 +492,7 @@ class DashBoardScreenState extends State<DashBoardScreen>
       resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
-          // Map
+          // Map as primary element
           GoogleMap(
             mapToolbarEnabled: false,
             zoomControlsEnabled: false,
@@ -486,38 +516,131 @@ class DashBoardScreenState extends State<DashBoardScreen>
             },
           ),
 
-          // Status bar space with semi-transparent gradient
+          // Top status bar with user info
           Positioned(
             top: 0,
             left: 0,
             right: 0,
             child: Container(
-              height: context.statusBarHeight + 40,
+              padding:
+                  EdgeInsets.fromLTRB(16, context.statusBarHeight + 8, 16, 8),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.black.withOpacity(0.4),
+                    Colors.black.withOpacity(0.5),
                     Colors.transparent,
                   ],
                 ),
               ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        height: 40,
+                        width: 40,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 10,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: Image.asset(
+                            'assets/assets/placeholder.jpg',
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(Icons.person,
+                                  color: AppColors.primary);
+                            },
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Welcome,",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          Text(
+                            appStore.firstName.isNotEmpty
+                                ? appStore.firstName
+                                : "User",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  Container(
+                    height: 45,
+                    width: 45,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                          color: Colors.white.withOpacity(0.4), width: 1),
+                    ),
+                    child: IconButton(
+                      icon: Icon(MaterialCommunityIcons.bell_outline,
+                          color: Colors.white),
+                      onPressed: () {
+                        launchScreen(context, NotificationScreen());
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
 
-          // Top bar with search and notification button
-          FadeTransition(
-            opacity: _mapElementsFadeAnimation,
-            child: Positioned(
-              top: context.statusBarHeight + 16,
-              right: 16,
-              left: 16,
-              child: Row(
-                children: [
-                  // Search/location button
-                  Expanded(
+          // Location input cards
+          Positioned(
+            top: context.statusBarHeight + 80,
+            left: 16,
+            right: 16,
+            child: Column(
+              children: [
+                // Current location card
+                Container(
+                  margin: EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 10,
+                        spreadRadius: 0,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
                     child: InkWell(
+                      borderRadius: BorderRadius.circular(16),
                       onTap: () {
                         showModalBottomSheet(
                           context: context,
@@ -532,26 +655,20 @@ class DashBoardScreenState extends State<DashBoardScreen>
                               title: sourceLocationTitle),
                         );
                       },
-                      child: Container(
-                        height: 50,
-                        padding: EdgeInsets.symmetric(horizontal: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              spreadRadius: 0,
-                              blurRadius: 10,
-                              offset: Offset(0, 3),
-                            ),
-                          ],
-                        ),
+                      child: Padding(
+                        padding: EdgeInsets.all(16),
                         child: Row(
                           children: [
-                            Icon(MaterialCommunityIcons.magnify,
-                                color: AppColors.primary),
-                            SizedBox(width: 12),
+                            Container(
+                              padding: EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withOpacity(0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(Icons.my_location,
+                                  color: AppColors.primary, size: 20),
+                            ),
+                            SizedBox(width: 16),
                             Expanded(
                               child: Text(
                                 sourceLocationTitle != null &&
@@ -559,10 +676,11 @@ class DashBoardScreenState extends State<DashBoardScreen>
                                     ? sourceLocationTitle.length > 30
                                         ? '${sourceLocationTitle.substring(0, 30)}...'
                                         : sourceLocationTitle
-                                    : 'where to',
+                                    : language.whatWouldYouLikeToGo,
                                 style: TextStyle(
                                   color: Colors.grey.shade700,
-                                  fontSize: 14,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -573,243 +691,139 @@ class DashBoardScreenState extends State<DashBoardScreen>
                       ),
                     ),
                   ),
-                  SizedBox(width: 12),
-                  // Notification button
-                  Container(
-                    height: 50,
-                    width: 50,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          spreadRadius: 0,
-                          blurRadius: 10,
-                          offset: Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: IconButton(
-                      icon: Icon(MaterialCommunityIcons.bell_outline,
-                          color: AppColors.primary),
-                      onPressed: () {
-                        launchScreen(context, NotificationScreen());
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Quick action buttons (my location)
-          SlideTransition(
-            position: _quickActionSlideAnimation,
-            child: Positioned(
-              bottom: 150,
-              right: 16,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      spreadRadius: 0,
-                      blurRadius: 10,
-                      offset: Offset(0, 3),
-                    ),
-                  ],
                 ),
-                child: IconButton(
-                  icon: Icon(MaterialCommunityIcons.crosshairs_gps,
-                      color: AppColors.primary),
-                  onPressed: () async {
-                    final geoPosition = await Geolocator.getCurrentPosition(
-                            timeLimit: Duration(seconds: 30),
-                            desiredAccuracy: LocationAccuracy.high)
-                        .catchError((error) {
-                      launchScreen(navigatorKey.currentState!.overlay!.context,
-                          LocationPermissionScreen());
-                    });
 
-                    if (mapController != null) {
-                      mapController!.animateCamera(CameraUpdate.newLatLng(
-                          LatLng(geoPosition.latitude, geoPosition.longitude)));
-                    }
-                  },
-                ),
-              ),
-            ),
-          ),
-
-          // Scheduled rides button
-          if (appStore.isScheduleRide == "1" &&
-              schedule_ride_request.isNotEmpty)
-            SlideTransition(
-              position: _quickActionSlideAnimation,
-              child: Positioned(
-                bottom: 216,
-                right: 16,
-                child: InkWell(
-                  onTap: () {
-                    launchScreen(context, ScheduleRideListScreen());
-                  },
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          spreadRadius: 0,
-                          blurRadius: 10,
-                          offset: Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        lt.Lottie.asset(
-                          taxiAnim,
-                          height: 30,
-                          width: 30,
-                          fit: BoxFit.cover,
-                        ),
-                        SizedBox(width: 8),
-                        Text(
-                          language.schedule_list_title ??
-                              "Your Scheduled Rides",
-                          style: TextStyle(
-                            color: Colors.grey.shade800,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-          // Loading indicator
-          Observer(
-            builder: (context) => Visibility(
-              visible: appStore.isLoading,
-              child: Container(
-                color: Colors.black26,
-                child: Center(
-                  child: CircularProgressIndicator(
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(AppColors.primary),
-                    strokeWidth: 3,
-                  ),
-                ),
-              ),
-            ),
-          ),
-
-          // Bottom sliding panel
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: AnimatedBuilder(
-              animation: _panelScaleAnimation,
-              builder: (context, child) {
-                return Transform.scale(
-                  scale: _panelScaleAnimation.value,
-                  alignment: Alignment.bottomCenter,
-                  child: SlidingUpPanel(
-                    controller: panelController,
-                    padding: EdgeInsets.all(16),
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(30),
-                      topRight: Radius.circular(30),
-                    ),
-                    minHeight: 140,
-                    maxHeight: 140,
-                    backdropTapClosesPanel: true,
+                // Destination input card
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.1),
-                        spreadRadius: 0,
                         blurRadius: 10,
-                        offset: Offset(0, -2),
+                        spreadRadius: 0,
+                        offset: Offset(0, 4),
                       ),
                     ],
-                    panel: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Center(
-                          child: Container(
-                            margin: EdgeInsets.only(bottom: 16),
-                            height: 5,
-                            width: 50,
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade300,
-                              borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(16),
+                      onTap: () {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(24),
+                              topRight: Radius.circular(24),
                             ),
                           ),
-                        ),
-                        Text(
-                          language.whatWouldYouLikeToGo.capitalizeFirstLetter(),
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                        ),
-                        SizedBox(height: 16),
-                        InkWell(
-                          onTap: () {
-                            showModalBottomSheet(
-                              context: context,
-                              isScrollControlled: true,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(24),
-                                  topRight: Radius.circular(24),
+                          builder: (_) => SearchLocationComponent(
+                              title: sourceLocationTitle),
+                        );
+                      },
+                      child: Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade100,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(Icons.search,
+                                  color: Colors.grey.shade700, size: 20),
+                            ),
+                            SizedBox(width: 16),
+                            Expanded(
+                              child: Text(
+                                language.enterYourDestination,
+                                style: TextStyle(
+                                  color: Colors.grey.shade700,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
-                              builder: (_) => SearchLocationComponent(
-                                  title: sourceLocationTitle),
-                            );
-                          },
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 14),
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade100,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: Colors.grey.shade300),
                             ),
-                            child: Row(
-                              children: [
-                                Icon(Icons.search, color: AppColors.primary),
-                                SizedBox(width: 12),
-                                Text(
-                                  language.enterYourDestination,
-                                  style: TextStyle(
-                                    color: Colors.grey.shade700,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
-                );
-              },
+                ),
+              ],
             ),
           ),
+
+          // Bottom panel for scheduled rides
+          if (schedule_ride_request.isNotEmpty)
+            Positioned(
+              bottom: 16,
+              left: 16,
+              right: 16,
+              child: GestureDetector(
+                onTap: () {
+                  launchScreen(context, ScheduleRideListScreen());
+                },
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 10,
+                        spreadRadius: 0,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(Icons.schedule,
+                            color: AppColors.primary, size: 20),
+                      ),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              language.schedule_list_title,
+                              style: TextStyle(
+                                color: Colors.black87,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              "${schedule_ride_request.length} ${language.schedule_list_title}",
+                              style: TextStyle(
+                                color: Colors.grey.shade600,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(Icons.arrow_forward_ios,
+                          color: Colors.grey.shade600, size: 16),
+                    ],
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -932,6 +946,7 @@ class DashBoardScreenState extends State<DashBoardScreen>
     _mapElementsAnimationController.dispose();
     _panelAnimationController.dispose();
     _quickActionAnimationController.dispose();
+    _headerAnimationController.dispose();
     if (serviceStatusStream != null) {
       serviceStatusStream.cancel();
     }

@@ -86,18 +86,31 @@ class _PDFViewerState extends State<PDFViewer> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: true,
-          title: Text("${language.invoice}",
-              style: boldTextStyle(color: Colors.white)),
-          actions: [
-            IconButton(
-              onPressed: () {
-                downloadPDF();
-              },
-              icon: Icon(Icons.download, color: Colors.white),
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(100),
+          child: AppBar(
+            flexibleSpace: Container(
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage('assets/assets/images/backgroundFrame.png'),
+                  fit: BoxFit.cover,
+                ),
+              ),
             ),
-          ],
+            automaticallyImplyLeading: true,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            title: Text("${language.invoice}",
+                style: boldTextStyle(color: Colors.white)),
+            actions: [
+              IconButton(
+                onPressed: () {
+                  downloadPDF();
+                },
+                icon: Icon(Icons.download, color: Colors.white),
+              ),
+            ],
+          ),
         ),
         body: Stack(
           children: [

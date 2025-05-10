@@ -19,6 +19,7 @@ import '../utils/images.dart';
 import 'DashBoardScreen.dart';
 import 'EditProfileScreen.dart';
 import 'SignInScreen.dart';
+import 'MainScreen.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -128,12 +129,12 @@ class SplashScreenState extends State<SplashScreen>
               await Geolocator.getCurrentPosition().then((value) {
                 sharedPref.setDouble(LATITUDE, value.latitude);
                 sharedPref.setDouble(LONGITUDE, value.longitude);
-                launchScreen(context, DashBoardScreen(),
+                launchScreen(context, MainScreen(),
                     pageRouteAnimation: PageRouteAnimation.Slide,
                     isNewTask: true);
               });
             }).catchError((e) {
-              launchScreen(context, DashBoardScreen(),
+              launchScreen(context, MainScreen(),
                   pageRouteAnimation: PageRouteAnimation.Slide,
                   isNewTask: true);
             });
@@ -178,19 +179,19 @@ class SplashScreenState extends State<SplashScreen>
                         height: 180,
                         width: 180,
                       ),
-                      SizedBox(height: 24),
+                      // SizedBox(height: 24),
+                      // Text(
+                      //   mAppName,
+                      //   style: TextStyle(
+                      //     color: Colors.white,
+                      //     fontSize: 28,
+                      //     fontWeight: FontWeight.bold,
+                      //     letterSpacing: 1.2,
+                      //   ),
+                      // ),
+                      SizedBox(height: 10),
                       Text(
-                        mAppName,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.2,
-                        ),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        "Your Ride, Your Way",
+                        "Your Premium Ride Service",
                         style: TextStyle(
                           color: Colors.white.withOpacity(0.8),
                           fontSize: 16,

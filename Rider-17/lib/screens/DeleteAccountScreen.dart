@@ -37,8 +37,22 @@ class DeleteAccountScreenState extends State<DeleteAccountScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(language.deleteAccount, style: boldTextStyle(color: appTextPrimaryColorWhite)),
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(100),
+        child: AppBar(
+          flexibleSpace: Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/assets/images/backgroundFrame.png'),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          title: Text(language.deleteAccount,
+              style: boldTextStyle(color: appTextPrimaryColorWhite)),
+        ),
       ),
       body: Stack(
         children: [
@@ -47,7 +61,8 @@ class DeleteAccountScreenState extends State<DeleteAccountScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(language.areYouSureYouWantPleaseReadAffect, style: primaryTextStyle()),
+                Text(language.areYouSureYouWantPleaseReadAffect,
+                    style: primaryTextStyle()),
                 SizedBox(height: 16),
                 Text(language.account, style: boldTextStyle()),
                 SizedBox(height: 8),
@@ -93,7 +108,9 @@ class DeleteAccountScreenState extends State<DeleteAccountScreen> {
   Future deleteAccount(BuildContext context) async {
     appStore.setLoading(true);
     await deleteUser().then((value) async {
-      await userService.removeDocument(sharedPref.getString(UID)!).then((value) async {
+      await userService
+          .removeDocument(sharedPref.getString(UID)!)
+          .then((value) async {
         await authService.deleteUserFirebase().then((value) async {
           await logout(isDelete: true).then((value) {
             appStore.setLoading(false);

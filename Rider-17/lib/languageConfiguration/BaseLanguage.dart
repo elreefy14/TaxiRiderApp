@@ -59,7 +59,8 @@ class BaseLanguage {
 
   String get writeMessage => getContentValueFromKey(24);
 
-  String get enterTheEmailAssociatedWithYourAccount => getContentValueFromKey(25);
+  String get enterTheEmailAssociatedWithYourAccount =>
+      getContentValueFromKey(25);
 
   String get submit => getContentValueFromKey(26);
 
@@ -209,6 +210,8 @@ class BaseLanguage {
 
   String get profile => getContentValueFromKey(99);
 
+  String get guest => getContentValueFromKey(606);
+
   String get privacyPolicy => getContentValueFromKey(100);
 
   String get helpSupport => getContentValueFromKey(101);
@@ -219,7 +222,8 @@ class BaseLanguage {
 
   String get lookingForNearbyDrivers => getContentValueFromKey(104);
 
-  String get weAreLookingForNearDriversAcceptsYourRide => getContentValueFromKey(105);
+  String get weAreLookingForNearDriversAcceptsYourRide =>
+      getContentValueFromKey(105);
 
   String get get => getContentValueFromKey(106);
 
@@ -289,7 +293,8 @@ class BaseLanguage {
 
   String get mostReliableMightyRiderApp => getContentValueFromKey(139);
 
-  String get toEnjoyYourRideExperiencePleaseAllowPermissions => getContentValueFromKey(140);
+  String get toEnjoyYourRideExperiencePleaseAllowPermissions =>
+      getContentValueFromKey(140);
 
   String get txtURLEmpty => getContentValueFromKey(141);
 
@@ -323,7 +328,8 @@ class BaseLanguage {
 
   String get moneyDebit => getContentValueFromKey(156);
 
-  String get pleaseAcceptTermsOfServicePrivacyPolicy => getContentValueFromKey(157);
+  String get pleaseAcceptTermsOfServicePrivacyPolicy =>
+      getContentValueFromKey(157);
 
   String get rememberMe => getContentValueFromKey(158);
 

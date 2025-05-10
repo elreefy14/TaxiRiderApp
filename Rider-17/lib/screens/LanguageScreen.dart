@@ -25,8 +25,22 @@ class LanguageScreenState extends State<LanguageScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(language.language, style: boldTextStyle(color: appTextPrimaryColorWhite)),
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(100),
+        child: AppBar(
+          flexibleSpace: Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/assets/images/backgroundFrame.png'),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          title: Text(language.language,
+              style: boldTextStyle(color: appTextPrimaryColorWhite)),
+        ),
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
@@ -38,30 +52,49 @@ class LanguageScreenState extends State<LanguageScreen> {
             return inkWellWidget(
               onTap: () async {
                 await setValue(SELECTED_LANGUAGE_CODE, data.languageCode);
-                await setValue(SELECTED_LANGUAGE_COUNTRY_CODE, data.languageCode);
+                await setValue(
+                    SELECTED_LANGUAGE_COUNTRY_CODE, data.languageCode);
                 selectedServerLanguageData = data;
                 setValue(IS_SELECTED_LANGUAGE_CHANGE, true);
                 setState(() {});
                 LiveStream().emit(CHANGE_LANGUAGE);
-                await appStore.setLanguage(data.languageCode!, context: context);
+                await appStore.setLanguage(data.languageCode!,
+                    context: context);
               },
               child: Container(
                 padding: EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                    color: (sharedPref.getString(SELECTED_LANGUAGE_CODE) ?? defaultLanguageCode) == data.languageCode ? primaryColor.withOpacity(0.6) : Colors.transparent,
-                    border: Border.all(width: 0.4, color: textSecondaryColorGlobal),
+                    color: (sharedPref.getString(SELECTED_LANGUAGE_CODE) ??
+                                defaultLanguageCode) ==
+                            data.languageCode
+                        ? primaryColor.withOpacity(0.6)
+                        : Colors.transparent,
+                    border:
+                        Border.all(width: 0.4, color: textSecondaryColorGlobal),
                     borderRadius: radius()),
                 width: (MediaQuery.of(context).size.width - 44) / 2,
                 child: Row(
                   children: [
-                    ClipRRect(borderRadius: BorderRadius.circular(4), child: commonCachedNetworkImage(data.languageImage.validate(), width: 34, height: 34)),
+                    ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: commonCachedNetworkImage(
+                            data.languageImage.validate(),
+                            width: 34,
+                            height: 34)),
                     SizedBox(
                       width: 8,
                     ),
-                    Expanded(child: Text('${data.languageName.validate()}', style: primaryTextStyle())),
-                    sharedPref.getString(SELECTED_LANGUAGE_CODE).validateLanguage() == data.languageCode
-                        ? Icon(Icons.radio_button_checked, size: 20, color: primaryColor)
-                        : Icon(Icons.radio_button_off, size: 20, color: dividerColor),
+                    Expanded(
+                        child: Text('${data.languageName.validate()}',
+                            style: primaryTextStyle())),
+                    sharedPref
+                                .getString(SELECTED_LANGUAGE_CODE)
+                                .validateLanguage() ==
+                            data.languageCode
+                        ? Icon(Icons.radio_button_checked,
+                            size: 20, color: primaryColor)
+                        : Icon(Icons.radio_button_off,
+                            size: 20, color: dividerColor),
                   ],
                 ),
               ),

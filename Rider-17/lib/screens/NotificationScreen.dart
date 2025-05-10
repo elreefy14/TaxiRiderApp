@@ -140,34 +140,46 @@ class NotificationScreenState extends State<NotificationScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: AppColors.primary,
-        elevation: 0,
-        title: Text(language.notification,
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        actions: [
-          if (notificationData.isNotEmpty)
-            IconButton(
-              icon: Icon(Icons.done_all, color: Colors.white),
-              onPressed: () {
-                // Mark all as read functionality
-                setState(() {
-                  for (var notification in notificationData) {
-                    if (notification.readAt == null) {
-                      notification.readAt = DateTime.now().toString();
-                    }
-                  }
-                });
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text("All notifications marked as read"),
-                    backgroundColor: AppColors.primary,
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              },
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(100),
+        child: AppBar(
+          flexibleSpace: Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/assets/images/backgroundFrame.png'),
+                fit: BoxFit.cover,
+              ),
             ),
-        ],
+          ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          title: Text(language.notification,
+              style:
+                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          actions: [
+            if (notificationData.isNotEmpty)
+              IconButton(
+                icon: Icon(Icons.done_all, color: Colors.white),
+                onPressed: () {
+                  // Mark all as read functionality
+                  setState(() {
+                    for (var notification in notificationData) {
+                      if (notification.readAt == null) {
+                        notification.readAt = DateTime.now().toString();
+                      }
+                    }
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("All notifications marked as read"),
+                      backgroundColor: AppColors.primary,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
+              ),
+          ],
+        ),
       ),
       body: Observer(builder: (context) {
         return Stack(

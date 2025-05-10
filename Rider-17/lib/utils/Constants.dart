@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'images.dart';
 
 //region App name
-const mAppName = 'Mighty Rider';
+const mAppName = 'Masarak';
 //endregion
 
 // region Google map key

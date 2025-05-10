@@ -17,6 +17,7 @@ import '../utils/Extensions/app_common.dart';
 import '../utils/Extensions/app_textfield.dart';
 import 'BankInfoScreen.dart';
 import 'PaymentScreen.dart';
+import '../components/ModernAppBar.dart';
 
 class WalletScreen extends StatefulWidget {
   @override
@@ -99,9 +100,8 @@ class WalletScreenState extends State<WalletScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(language.wallet,
-            style: boldTextStyle(color: appTextPrimaryColorWhite)),
+      appBar: ModernAppBar(
+        title: language.wallet,
       ),
       body: Observer(builder: (context) {
         return Stack(

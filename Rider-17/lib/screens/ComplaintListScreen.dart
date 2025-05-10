@@ -36,7 +36,8 @@ class ComplaintListScreenState extends State<ComplaintListScreen> {
     super.initState();
     init();
     scrollController.addListener(() {
-      if (scrollController.position.pixels == scrollController.position.maxScrollExtent) {
+      if (scrollController.position.pixels ==
+          scrollController.position.maxScrollExtent) {
         if (currentPage < totalPage) {
           appStore.setLoading(true);
           currentPage++;
@@ -50,7 +51,8 @@ class ComplaintListScreenState extends State<ComplaintListScreen> {
   }
 
   void init() async {
-    await complaintList(complaintId: widget.complaint, currentPage: currentPage).then((value) {
+    await complaintList(complaintId: widget.complaint, currentPage: currentPage)
+        .then((value) {
       appStore.setLoading(false);
 
       currentPage = value.pagination!.currentPage!;
@@ -102,8 +104,22 @@ class ComplaintListScreenState extends State<ComplaintListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(language.complain, style: boldTextStyle(color: Colors.white)),
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(100),
+        child: AppBar(
+          flexibleSpace: Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/assets/images/backgroundFrame.png'),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          title: Text(language.complain,
+              style: boldTextStyle(color: Colors.white)),
+        ),
       ),
       body: Observer(builder: (context) {
         return Stack(
@@ -120,8 +136,20 @@ class ComplaintListScreenState extends State<ComplaintListScreen> {
                     ComplaintList mData = complaintListData[index];
                     return Container(
                       margin: complaintListData[index].addedBy != ADMIN
-                          ? EdgeInsets.only(top: 6, bottom: 6, left: isRTL ? 0 : MediaQuery.of(context).size.width * 0.25, right: 8)
-                          : EdgeInsets.only(top: 6, bottom: 6, left: 8, right: isRTL ? 0 : MediaQuery.of(context).size.width * 0.25),
+                          ? EdgeInsets.only(
+                              top: 6,
+                              bottom: 6,
+                              left: isRTL
+                                  ? 0
+                                  : MediaQuery.of(context).size.width * 0.25,
+                              right: 8)
+                          : EdgeInsets.only(
+                              top: 6,
+                              bottom: 6,
+                              left: 8,
+                              right: isRTL
+                                  ? 0
+                                  : MediaQuery.of(context).size.width * 0.25),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -129,39 +157,71 @@ class ComplaintListScreenState extends State<ComplaintListScreen> {
                             Container(
                               height: 35,
                               width: 35,
-                              decoration:
-                                  BoxDecoration(shape: BoxShape.circle, image: DecorationImage(image: NetworkImage(mData.userProfileImage.validate())), border: Border.all(color: Colors.black12)),
+                              decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  image: DecorationImage(
+                                      image: NetworkImage(
+                                          mData.userProfileImage.validate())),
+                                  border: Border.all(color: Colors.black12)),
                             ),
-                          if (complaintListData[index].addedBy == ADMIN) SizedBox(width: 8),
+                          if (complaintListData[index].addedBy == ADMIN)
+                            SizedBox(width: 8),
                           Expanded(
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: complaintListData[index].addedBy != ADMIN ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-                              mainAxisAlignment: complaintListData[index].addedBy != ADMIN ? MainAxisAlignment.end : MainAxisAlignment.start,
+                              crossAxisAlignment:
+                                  complaintListData[index].addedBy != ADMIN
+                                      ? CrossAxisAlignment.end
+                                      : CrossAxisAlignment.start,
+                              mainAxisAlignment:
+                                  complaintListData[index].addedBy != ADMIN
+                                      ? MainAxisAlignment.end
+                                      : MainAxisAlignment.start,
                               children: [
                                 Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                  decoration: BoxDecoration(boxShadow: [
-                                    BoxShadow(color: Colors.grey, blurRadius: 0.1, spreadRadius: 0.2), //BoxShadow
-                                  ], color: complaintListData[index].addedBy != ADMIN ? primaryColor : Theme.of(context).cardColor, borderRadius: BorderRadius.circular(16)),
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 8),
+                                  decoration: BoxDecoration(
+                                      boxShadow: [
+                                        BoxShadow(
+                                            color: Colors.grey,
+                                            blurRadius: 0.1,
+                                            spreadRadius: 0.2), //BoxShadow
+                                      ],
+                                      color: complaintListData[index].addedBy !=
+                                              ADMIN
+                                          ? primaryColor
+                                          : Theme.of(context).cardColor,
+                                      borderRadius: BorderRadius.circular(16)),
                                   child: Text(
                                     mData.comment.validate(),
-                                    style: primaryTextStyle(color: complaintListData[index].addedBy != ADMIN ? Colors.white : textPrimaryColorGlobal),
+                                    style: primaryTextStyle(
+                                        color:
+                                            complaintListData[index].addedBy !=
+                                                    ADMIN
+                                                ? Colors.white
+                                                : textPrimaryColorGlobal),
                                     maxLines: null,
                                   ),
                                 ),
                                 SizedBox(height: 4),
-                                Text(printTime(mData.createdAt.validate()), style: secondaryTextStyle(size: 12)),
+                                Text(printTime(mData.createdAt.validate()),
+                                    style: secondaryTextStyle(size: 12)),
                               ],
                             ),
                           ),
-                          if (complaintListData[index].addedBy != ADMIN) SizedBox(width: 8),
+                          if (complaintListData[index].addedBy != ADMIN)
+                            SizedBox(width: 8),
                           if (complaintListData[index].addedBy != ADMIN)
                             Container(
                               height: 35,
                               width: 35,
-                              decoration:
-                                  BoxDecoration(shape: BoxShape.circle, image: DecorationImage(image: NetworkImage(mData.userProfileImage.validate())), border: Border.all(color: Colors.black12)),
+                              decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  image: DecorationImage(
+                                      image: NetworkImage(
+                                          mData.userProfileImage.validate())),
+                                  border: Border.all(color: Colors.black12)),
                             ),
                         ],
                       ),
