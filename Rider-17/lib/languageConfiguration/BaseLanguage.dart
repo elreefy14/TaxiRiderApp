@@ -602,9 +602,34 @@ class BaseLanguage {
   String get updateNote => getContentValueFromKey(388);
 
   String get updateNow => getContentValueFromKey(389);
+
   String get schedule => getContentValueFromKey(390);
+
   String get schedule_at => getContentValueFromKey(391);
+
   String get now => getContentValueFromKey(392);
+
   String get schedule_list_title => getContentValueFromKey(393);
+
   String get schedule_list_desc => getContentValueFromKey(394);
+
+  String get welcomeBack => getContentValueFromKey(395);
+
+  String get serviceCategories => getContentValueFromKey(396);
+
+  String get noServicesFound => getContentValueFromKey(397);
+
+  String get welcomeToTaxi => getContentValueFromKey(398);
+
+  String get enjoyComfortable => getContentValueFromKey(399);
+
+  String get tips => getContentValueFromKey(400);
+
+  String get bookBeforeTravel => getContentValueFromKey(401);
+
+  String get saveTimeWithScheduling => getContentValueFromKey(402);
+
+  String get comfortableRide => getContentValueFromKey(403);
+
+  String get enjoyYourRide => getContentValueFromKey(404);
 }

@@ -124,7 +124,7 @@ class SplashScreenState extends State<SplashScreen>
             log(error.toString());
             appStore.setLoading(false);
           });
-          if (await checkPermission())
+          if (await checkPermission()) {
             await Geolocator.requestPermission().then((value) async {
               await Geolocator.getCurrentPosition().then((value) {
                 sharedPref.setDouble(LATITUDE, value.latitude);
@@ -138,6 +138,7 @@ class SplashScreenState extends State<SplashScreen>
                   pageRouteAnimation: PageRouteAnimation.Slide,
                   isNewTask: true);
             });
+          }
         }
       }
     }
